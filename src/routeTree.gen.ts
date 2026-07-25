@@ -9,38 +9,205 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifikasiEmailRouteImport } from './routes/verifikasi-email'
+import { Route as ResetSandiRouteImport } from './routes/reset-sandi'
+import { Route as MasukRouteImport } from './routes/masuk'
+import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
+import { Route as DaftarRouteImport } from './routes/daftar'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppBerandaRouteImport } from './routes/_app.beranda'
+import { Route as AppBelajarRouteImport } from './routes/_app.belajar'
+import { Route as AppBelajarMateriRouteImport } from './routes/_app.belajar.materi'
 
+const VerifikasiEmailRoute = VerifikasiEmailRouteImport.update({
+  id: '/verifikasi-email',
+  path: '/verifikasi-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetSandiRoute = ResetSandiRouteImport.update({
+  id: '/reset-sandi',
+  path: '/reset-sandi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasukRoute = MasukRouteImport.update({
+  id: '/masuk',
+  path: '/masuk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LupaSandiRoute = LupaSandiRouteImport.update({
+  id: '/lupa-sandi',
+  path: '/lupa-sandi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DaftarRoute = DaftarRouteImport.update({
+  id: '/daftar',
+  path: '/daftar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoadmapRoute = AppRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBerandaRoute = AppBerandaRouteImport.update({
+  id: '/beranda',
+  path: '/beranda',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBelajarRoute = AppBelajarRouteImport.update({
+  id: '/belajar',
+  path: '/belajar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBelajarMateriRoute = AppBelajarMateriRouteImport.update({
+  id: '/materi',
+  path: '/materi',
+  getParentRoute: () => AppBelajarRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/daftar': typeof DaftarRoute
+  '/lupa-sandi': typeof LupaSandiRoute
+  '/masuk': typeof MasukRoute
+  '/reset-sandi': typeof ResetSandiRoute
+  '/verifikasi-email': typeof VerifikasiEmailRoute
+  '/belajar': typeof AppBelajarRouteWithChildren
+  '/beranda': typeof AppBerandaRoute
+  '/roadmap': typeof AppRoadmapRoute
+  '/belajar/materi': typeof AppBelajarMateriRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/daftar': typeof DaftarRoute
+  '/lupa-sandi': typeof LupaSandiRoute
+  '/masuk': typeof MasukRoute
+  '/reset-sandi': typeof ResetSandiRoute
+  '/verifikasi-email': typeof VerifikasiEmailRoute
+  '/belajar': typeof AppBelajarRouteWithChildren
+  '/beranda': typeof AppBerandaRoute
+  '/roadmap': typeof AppRoadmapRoute
+  '/belajar/materi': typeof AppBelajarMateriRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/daftar': typeof DaftarRoute
+  '/lupa-sandi': typeof LupaSandiRoute
+  '/masuk': typeof MasukRoute
+  '/reset-sandi': typeof ResetSandiRoute
+  '/verifikasi-email': typeof VerifikasiEmailRoute
+  '/_app/belajar': typeof AppBelajarRouteWithChildren
+  '/_app/beranda': typeof AppBerandaRoute
+  '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/belajar/materi': typeof AppBelajarMateriRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/daftar'
+    | '/lupa-sandi'
+    | '/masuk'
+    | '/reset-sandi'
+    | '/verifikasi-email'
+    | '/belajar'
+    | '/beranda'
+    | '/roadmap'
+    | '/belajar/materi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/daftar'
+    | '/lupa-sandi'
+    | '/masuk'
+    | '/reset-sandi'
+    | '/verifikasi-email'
+    | '/belajar'
+    | '/beranda'
+    | '/roadmap'
+    | '/belajar/materi'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/daftar'
+    | '/lupa-sandi'
+    | '/masuk'
+    | '/reset-sandi'
+    | '/verifikasi-email'
+    | '/_app/belajar'
+    | '/_app/beranda'
+    | '/_app/roadmap'
+    | '/_app/belajar/materi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  DaftarRoute: typeof DaftarRoute
+  LupaSandiRoute: typeof LupaSandiRoute
+  MasukRoute: typeof MasukRoute
+  ResetSandiRoute: typeof ResetSandiRoute
+  VerifikasiEmailRoute: typeof VerifikasiEmailRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verifikasi-email': {
+      id: '/verifikasi-email'
+      path: '/verifikasi-email'
+      fullPath: '/verifikasi-email'
+      preLoaderRoute: typeof VerifikasiEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-sandi': {
+      id: '/reset-sandi'
+      path: '/reset-sandi'
+      fullPath: '/reset-sandi'
+      preLoaderRoute: typeof ResetSandiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/masuk': {
+      id: '/masuk'
+      path: '/masuk'
+      fullPath: '/masuk'
+      preLoaderRoute: typeof MasukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lupa-sandi': {
+      id: '/lupa-sandi'
+      path: '/lupa-sandi'
+      fullPath: '/lupa-sandi'
+      preLoaderRoute: typeof LupaSandiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/daftar': {
+      id: '/daftar'
+      path: '/daftar'
+      fullPath: '/daftar'
+      preLoaderRoute: typeof DaftarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +215,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/roadmap': {
+      id: '/_app/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/beranda': {
+      id: '/_app/beranda'
+      path: '/beranda'
+      fullPath: '/beranda'
+      preLoaderRoute: typeof AppBerandaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/belajar': {
+      id: '/_app/belajar'
+      path: '/belajar'
+      fullPath: '/belajar'
+      preLoaderRoute: typeof AppBelajarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/belajar/materi': {
+      id: '/_app/belajar/materi'
+      path: '/materi'
+      fullPath: '/belajar/materi'
+      preLoaderRoute: typeof AppBelajarMateriRouteImport
+      parentRoute: typeof AppBelajarRoute
+    }
   }
 }
 
+interface AppBelajarRouteChildren {
+  AppBelajarMateriRoute: typeof AppBelajarMateriRoute
+}
+
+const AppBelajarRouteChildren: AppBelajarRouteChildren = {
+  AppBelajarMateriRoute: AppBelajarMateriRoute,
+}
+
+const AppBelajarRouteWithChildren = AppBelajarRoute._addFileChildren(
+  AppBelajarRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppBelajarRoute: typeof AppBelajarRouteWithChildren
+  AppBerandaRoute: typeof AppBerandaRoute
+  AppRoadmapRoute: typeof AppRoadmapRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBelajarRoute: AppBelajarRouteWithChildren,
+  AppBerandaRoute: AppBerandaRoute,
+  AppRoadmapRoute: AppRoadmapRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  DaftarRoute: DaftarRoute,
+  LupaSandiRoute: LupaSandiRoute,
+  MasukRoute: MasukRoute,
+  ResetSandiRoute: ResetSandiRoute,
+  VerifikasiEmailRoute: VerifikasiEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
