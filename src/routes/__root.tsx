@@ -11,22 +11,34 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ThemeProvider } from "../lib/theme";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-background px-4">
+      <div className="pointer-events-none absolute inset-0 bp-dots opacity-40" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bp-glow" />
+      <div className="relative max-w-md text-center">
+        <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border bg-card text-2xl font-semibold text-primary">
+          404
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Halaman tidak ditemukan</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Halaman yang kamu cari tidak tersedia atau sudah dipindahkan.
         </p>
-        <div className="mt-6">
+        <div className="mt-6 flex items-center justify-center gap-2">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Beranda
+          </Link>
+          <Link
+            to="/beranda"
+            className="inline-flex h-10 items-center justify-center rounded-lg border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Belajar
           </Link>
         </div>
       </div>
@@ -42,13 +54,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Halaman gagal dimuat
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Terjadi kesalahan. Silakan coba lagi atau kembali ke beranda.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -56,15 +68,15 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Coba lagi
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex h-10 items-center justify-center rounded-lg border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Beranda
           </a>
         </div>
       </div>
@@ -77,21 +89,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "BrevetAI — Platform Belajar Brevet Pajak A & B" },
+      {
+        name: "description",
+        content:
+          "BrevetAI adalah platform belajar Brevet Pajak A & B modern berbasis AI. Belajar interaktif, roadmap terarah, kuis adaptif, dan asisten AI pribadi.",
+      },
+      { name: "author", content: "BrevetAI" },
+      { property: "og:title", content: "BrevetAI — Platform Belajar Brevet Pajak A & B" },
+      {
+        property: "og:description",
+        content:
+          "Belajar Brevet Pajak A & B dengan pengalaman AI-first: roadmap, materi interaktif, kuis, kartu belajar, dan asisten AI.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
@@ -102,9 +124,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="id" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
+          }}
+        />
       </head>
       <body>
         {children}
@@ -119,8 +147,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ThemeProvider>
+        <Outlet />
+        <Toaster />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
