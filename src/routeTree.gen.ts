@@ -17,9 +17,13 @@ import { Route as DaftarRouteImport } from './routes/daftar'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppKuisRouteImport } from './routes/_app.kuis'
+import { Route as AppKartuRouteImport } from './routes/_app.kartu'
 import { Route as AppBerandaRouteImport } from './routes/_app.beranda'
 import { Route as AppBelajarRouteImport } from './routes/_app.belajar'
+import { Route as AppKuisHasilRouteImport } from './routes/_app.kuis.hasil'
 import { Route as AppBelajarMateriRouteImport } from './routes/_app.belajar.materi'
+import { Route as AppAiChatRouteImport } from './routes/_app.ai.chat'
 
 const VerifikasiEmailRoute = VerifikasiEmailRouteImport.update({
   id: '/verifikasi-email',
@@ -60,6 +64,16 @@ const AppRoadmapRoute = AppRoadmapRouteImport.update({
   path: '/roadmap',
   getParentRoute: () => AppRoute,
 } as any)
+const AppKuisRoute = AppKuisRouteImport.update({
+  id: '/kuis',
+  path: '/kuis',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKartuRoute = AppKartuRouteImport.update({
+  id: '/kartu',
+  path: '/kartu',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBerandaRoute = AppBerandaRouteImport.update({
   id: '/beranda',
   path: '/beranda',
@@ -70,10 +84,20 @@ const AppBelajarRoute = AppBelajarRouteImport.update({
   path: '/belajar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppKuisHasilRoute = AppKuisHasilRouteImport.update({
+  id: '/hasil',
+  path: '/hasil',
+  getParentRoute: () => AppKuisRoute,
+} as any)
 const AppBelajarMateriRoute = AppBelajarMateriRouteImport.update({
   id: '/materi',
   path: '/materi',
   getParentRoute: () => AppBelajarRoute,
+} as any)
+const AppAiChatRoute = AppAiChatRouteImport.update({
+  id: '/ai/chat',
+  path: '/ai/chat',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -85,8 +109,12 @@ export interface FileRoutesByFullPath {
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/belajar': typeof AppBelajarRouteWithChildren
   '/beranda': typeof AppBerandaRoute
+  '/kartu': typeof AppKartuRoute
+  '/kuis': typeof AppKuisRouteWithChildren
   '/roadmap': typeof AppRoadmapRoute
+  '/ai/chat': typeof AppAiChatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
+  '/kuis/hasil': typeof AppKuisHasilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,8 +125,12 @@ export interface FileRoutesByTo {
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/belajar': typeof AppBelajarRouteWithChildren
   '/beranda': typeof AppBerandaRoute
+  '/kartu': typeof AppKartuRoute
+  '/kuis': typeof AppKuisRouteWithChildren
   '/roadmap': typeof AppRoadmapRoute
+  '/ai/chat': typeof AppAiChatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
+  '/kuis/hasil': typeof AppKuisHasilRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,8 +143,12 @@ export interface FileRoutesById {
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/_app/belajar': typeof AppBelajarRouteWithChildren
   '/_app/beranda': typeof AppBerandaRoute
+  '/_app/kartu': typeof AppKartuRoute
+  '/_app/kuis': typeof AppKuisRouteWithChildren
   '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/ai/chat': typeof AppAiChatRoute
   '/_app/belajar/materi': typeof AppBelajarMateriRoute
+  '/_app/kuis/hasil': typeof AppKuisHasilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,8 +161,12 @@ export interface FileRouteTypes {
     | '/verifikasi-email'
     | '/belajar'
     | '/beranda'
+    | '/kartu'
+    | '/kuis'
     | '/roadmap'
+    | '/ai/chat'
     | '/belajar/materi'
+    | '/kuis/hasil'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -137,8 +177,12 @@ export interface FileRouteTypes {
     | '/verifikasi-email'
     | '/belajar'
     | '/beranda'
+    | '/kartu'
+    | '/kuis'
     | '/roadmap'
+    | '/ai/chat'
     | '/belajar/materi'
+    | '/kuis/hasil'
   id:
     | '__root__'
     | '/'
@@ -150,8 +194,12 @@ export interface FileRouteTypes {
     | '/verifikasi-email'
     | '/_app/belajar'
     | '/_app/beranda'
+    | '/_app/kartu'
+    | '/_app/kuis'
     | '/_app/roadmap'
+    | '/_app/ai/chat'
     | '/_app/belajar/materi'
+    | '/_app/kuis/hasil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -222,6 +270,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoadmapRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/kuis': {
+      id: '/_app/kuis'
+      path: '/kuis'
+      fullPath: '/kuis'
+      preLoaderRoute: typeof AppKuisRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/kartu': {
+      id: '/_app/kartu'
+      path: '/kartu'
+      fullPath: '/kartu'
+      preLoaderRoute: typeof AppKartuRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/beranda': {
       id: '/_app/beranda'
       path: '/beranda'
@@ -236,12 +298,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBelajarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/kuis/hasil': {
+      id: '/_app/kuis/hasil'
+      path: '/hasil'
+      fullPath: '/kuis/hasil'
+      preLoaderRoute: typeof AppKuisHasilRouteImport
+      parentRoute: typeof AppKuisRoute
+    }
     '/_app/belajar/materi': {
       id: '/_app/belajar/materi'
       path: '/materi'
       fullPath: '/belajar/materi'
       preLoaderRoute: typeof AppBelajarMateriRouteImport
       parentRoute: typeof AppBelajarRoute
+    }
+    '/_app/ai/chat': {
+      id: '/_app/ai/chat'
+      path: '/ai/chat'
+      fullPath: '/ai/chat'
+      preLoaderRoute: typeof AppAiChatRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
@@ -258,16 +334,33 @@ const AppBelajarRouteWithChildren = AppBelajarRoute._addFileChildren(
   AppBelajarRouteChildren,
 )
 
+interface AppKuisRouteChildren {
+  AppKuisHasilRoute: typeof AppKuisHasilRoute
+}
+
+const AppKuisRouteChildren: AppKuisRouteChildren = {
+  AppKuisHasilRoute: AppKuisHasilRoute,
+}
+
+const AppKuisRouteWithChildren =
+  AppKuisRoute._addFileChildren(AppKuisRouteChildren)
+
 interface AppRouteChildren {
   AppBelajarRoute: typeof AppBelajarRouteWithChildren
   AppBerandaRoute: typeof AppBerandaRoute
+  AppKartuRoute: typeof AppKartuRoute
+  AppKuisRoute: typeof AppKuisRouteWithChildren
   AppRoadmapRoute: typeof AppRoadmapRoute
+  AppAiChatRoute: typeof AppAiChatRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppBelajarRoute: AppBelajarRouteWithChildren,
   AppBerandaRoute: AppBerandaRoute,
+  AppKartuRoute: AppKartuRoute,
+  AppKuisRoute: AppKuisRouteWithChildren,
   AppRoadmapRoute: AppRoadmapRoute,
+  AppAiChatRoute: AppAiChatRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
