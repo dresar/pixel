@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifikasiEmailRouteImport } from './routes/verifikasi-email'
 import { Route as ResetSandiRouteImport } from './routes/reset-sandi'
+import { Route as PerawatanRouteImport } from './routes/perawatan'
 import { Route as MasukRouteImport } from './routes/masuk'
 import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
+import { Route as ErrorServerRouteImport } from './routes/error-server'
 import { Route as DaftarRouteImport } from './routes/daftar'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -42,12 +44,21 @@ import { Route as AppGambarRouteImport } from './routes/_app.gambar'
 import { Route as AppCariRouteImport } from './routes/_app.cari'
 import { Route as AppBerandaRouteImport } from './routes/_app.beranda'
 import { Route as AppBelajarRouteImport } from './routes/_app.belajar'
+import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppKuisHasilRouteImport } from './routes/_app.kuis.hasil'
 import { Route as AppBelajarMateriRouteImport } from './routes/_app.belajar.materi'
 import { Route as AppAiRiwayatRouteImport } from './routes/_app.ai.riwayat'
 import { Route as AppAiJelaskanRouteImport } from './routes/_app.ai.jelaskan'
 import { Route as AppAiChatRouteImport } from './routes/_app.ai.chat'
 import { Route as AppAiCatatanRouteImport } from './routes/_app.ai.catatan'
+import { Route as AppAdminPromptRouteImport } from './routes/_app.admin.prompt'
+import { Route as AppAdminPenggunaRouteImport } from './routes/_app.admin.pengguna'
+import { Route as AppAdminPengaturanRouteImport } from './routes/_app.admin.pengaturan'
+import { Route as AppAdminModulRouteImport } from './routes/_app.admin.modul'
+import { Route as AppAdminMateriRouteImport } from './routes/_app.admin.materi'
+import { Route as AppAdminJsonRouteImport } from './routes/_app.admin.json'
+import { Route as AppAdminGambarRouteImport } from './routes/_app.admin.gambar'
+import { Route as AppAdminAnalitikRouteImport } from './routes/_app.admin.analitik'
 
 const VerifikasiEmailRoute = VerifikasiEmailRouteImport.update({
   id: '/verifikasi-email',
@@ -59,6 +70,11 @@ const ResetSandiRoute = ResetSandiRouteImport.update({
   path: '/reset-sandi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerawatanRoute = PerawatanRouteImport.update({
+  id: '/perawatan',
+  path: '/perawatan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MasukRoute = MasukRouteImport.update({
   id: '/masuk',
   path: '/masuk',
@@ -67,6 +83,11 @@ const MasukRoute = MasukRouteImport.update({
 const LupaSandiRoute = LupaSandiRouteImport.update({
   id: '/lupa-sandi',
   path: '/lupa-sandi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorServerRoute = ErrorServerRouteImport.update({
+  id: '/error-server',
+  path: '/error-server',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DaftarRoute = DaftarRouteImport.update({
@@ -213,6 +234,11 @@ const AppBelajarRoute = AppBelajarRouteImport.update({
   path: '/belajar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppKuisHasilRoute = AppKuisHasilRouteImport.update({
   id: '/hasil',
   path: '/hasil',
@@ -243,12 +269,54 @@ const AppAiCatatanRoute = AppAiCatatanRouteImport.update({
   path: '/ai/catatan',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminPromptRoute = AppAdminPromptRouteImport.update({
+  id: '/admin/prompt',
+  path: '/admin/prompt',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminPenggunaRoute = AppAdminPenggunaRouteImport.update({
+  id: '/admin/pengguna',
+  path: '/admin/pengguna',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminPengaturanRoute = AppAdminPengaturanRouteImport.update({
+  id: '/admin/pengaturan',
+  path: '/admin/pengaturan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminModulRoute = AppAdminModulRouteImport.update({
+  id: '/admin/modul',
+  path: '/admin/modul',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminMateriRoute = AppAdminMateriRouteImport.update({
+  id: '/admin/materi',
+  path: '/admin/materi',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminJsonRoute = AppAdminJsonRouteImport.update({
+  id: '/admin/json',
+  path: '/admin/json',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminGambarRoute = AppAdminGambarRouteImport.update({
+  id: '/admin/gambar',
+  path: '/admin/gambar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminAnalitikRoute = AppAdminAnalitikRouteImport.update({
+  id: '/admin/analitik',
+  path: '/admin/analitik',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/daftar': typeof DaftarRoute
+  '/error-server': typeof ErrorServerRoute
   '/lupa-sandi': typeof LupaSandiRoute
   '/masuk': typeof MasukRoute
+  '/perawatan': typeof PerawatanRoute
   '/reset-sandi': typeof ResetSandiRoute
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/belajar': typeof AppBelajarRouteWithChildren
@@ -277,18 +345,29 @@ export interface FileRoutesByFullPath {
   '/tersimpan': typeof AppTersimpanRoute
   '/unduhan': typeof AppUnduhanRoute
   '/visual': typeof AppVisualRoute
+  '/admin/analitik': typeof AppAdminAnalitikRoute
+  '/admin/gambar': typeof AppAdminGambarRoute
+  '/admin/json': typeof AppAdminJsonRoute
+  '/admin/materi': typeof AppAdminMateriRoute
+  '/admin/modul': typeof AppAdminModulRoute
+  '/admin/pengaturan': typeof AppAdminPengaturanRoute
+  '/admin/pengguna': typeof AppAdminPenggunaRoute
+  '/admin/prompt': typeof AppAdminPromptRoute
   '/ai/catatan': typeof AppAiCatatanRoute
   '/ai/chat': typeof AppAiChatRoute
   '/ai/jelaskan': typeof AppAiJelaskanRoute
   '/ai/riwayat': typeof AppAiRiwayatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
+  '/admin/': typeof AppAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/daftar': typeof DaftarRoute
+  '/error-server': typeof ErrorServerRoute
   '/lupa-sandi': typeof LupaSandiRoute
   '/masuk': typeof MasukRoute
+  '/perawatan': typeof PerawatanRoute
   '/reset-sandi': typeof ResetSandiRoute
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/belajar': typeof AppBelajarRouteWithChildren
@@ -317,20 +396,31 @@ export interface FileRoutesByTo {
   '/tersimpan': typeof AppTersimpanRoute
   '/unduhan': typeof AppUnduhanRoute
   '/visual': typeof AppVisualRoute
+  '/admin/analitik': typeof AppAdminAnalitikRoute
+  '/admin/gambar': typeof AppAdminGambarRoute
+  '/admin/json': typeof AppAdminJsonRoute
+  '/admin/materi': typeof AppAdminMateriRoute
+  '/admin/modul': typeof AppAdminModulRoute
+  '/admin/pengaturan': typeof AppAdminPengaturanRoute
+  '/admin/pengguna': typeof AppAdminPenggunaRoute
+  '/admin/prompt': typeof AppAdminPromptRoute
   '/ai/catatan': typeof AppAiCatatanRoute
   '/ai/chat': typeof AppAiChatRoute
   '/ai/jelaskan': typeof AppAiJelaskanRoute
   '/ai/riwayat': typeof AppAiRiwayatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
+  '/admin': typeof AppAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/daftar': typeof DaftarRoute
+  '/error-server': typeof ErrorServerRoute
   '/lupa-sandi': typeof LupaSandiRoute
   '/masuk': typeof MasukRoute
+  '/perawatan': typeof PerawatanRoute
   '/reset-sandi': typeof ResetSandiRoute
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/_app/belajar': typeof AppBelajarRouteWithChildren
@@ -359,20 +449,31 @@ export interface FileRoutesById {
   '/_app/tersimpan': typeof AppTersimpanRoute
   '/_app/unduhan': typeof AppUnduhanRoute
   '/_app/visual': typeof AppVisualRoute
+  '/_app/admin/analitik': typeof AppAdminAnalitikRoute
+  '/_app/admin/gambar': typeof AppAdminGambarRoute
+  '/_app/admin/json': typeof AppAdminJsonRoute
+  '/_app/admin/materi': typeof AppAdminMateriRoute
+  '/_app/admin/modul': typeof AppAdminModulRoute
+  '/_app/admin/pengaturan': typeof AppAdminPengaturanRoute
+  '/_app/admin/pengguna': typeof AppAdminPenggunaRoute
+  '/_app/admin/prompt': typeof AppAdminPromptRoute
   '/_app/ai/catatan': typeof AppAiCatatanRoute
   '/_app/ai/chat': typeof AppAiChatRoute
   '/_app/ai/jelaskan': typeof AppAiJelaskanRoute
   '/_app/ai/riwayat': typeof AppAiRiwayatRoute
   '/_app/belajar/materi': typeof AppBelajarMateriRoute
   '/_app/kuis/hasil': typeof AppKuisHasilRoute
+  '/_app/admin/': typeof AppAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/daftar'
+    | '/error-server'
     | '/lupa-sandi'
     | '/masuk'
+    | '/perawatan'
     | '/reset-sandi'
     | '/verifikasi-email'
     | '/belajar'
@@ -401,18 +502,29 @@ export interface FileRouteTypes {
     | '/tersimpan'
     | '/unduhan'
     | '/visual'
+    | '/admin/analitik'
+    | '/admin/gambar'
+    | '/admin/json'
+    | '/admin/materi'
+    | '/admin/modul'
+    | '/admin/pengaturan'
+    | '/admin/pengguna'
+    | '/admin/prompt'
     | '/ai/catatan'
     | '/ai/chat'
     | '/ai/jelaskan'
     | '/ai/riwayat'
     | '/belajar/materi'
     | '/kuis/hasil'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/daftar'
+    | '/error-server'
     | '/lupa-sandi'
     | '/masuk'
+    | '/perawatan'
     | '/reset-sandi'
     | '/verifikasi-email'
     | '/belajar'
@@ -441,19 +553,30 @@ export interface FileRouteTypes {
     | '/tersimpan'
     | '/unduhan'
     | '/visual'
+    | '/admin/analitik'
+    | '/admin/gambar'
+    | '/admin/json'
+    | '/admin/materi'
+    | '/admin/modul'
+    | '/admin/pengaturan'
+    | '/admin/pengguna'
+    | '/admin/prompt'
     | '/ai/catatan'
     | '/ai/chat'
     | '/ai/jelaskan'
     | '/ai/riwayat'
     | '/belajar/materi'
     | '/kuis/hasil'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/daftar'
+    | '/error-server'
     | '/lupa-sandi'
     | '/masuk'
+    | '/perawatan'
     | '/reset-sandi'
     | '/verifikasi-email'
     | '/_app/belajar'
@@ -482,20 +605,31 @@ export interface FileRouteTypes {
     | '/_app/tersimpan'
     | '/_app/unduhan'
     | '/_app/visual'
+    | '/_app/admin/analitik'
+    | '/_app/admin/gambar'
+    | '/_app/admin/json'
+    | '/_app/admin/materi'
+    | '/_app/admin/modul'
+    | '/_app/admin/pengaturan'
+    | '/_app/admin/pengguna'
+    | '/_app/admin/prompt'
     | '/_app/ai/catatan'
     | '/_app/ai/chat'
     | '/_app/ai/jelaskan'
     | '/_app/ai/riwayat'
     | '/_app/belajar/materi'
     | '/_app/kuis/hasil'
+    | '/_app/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   DaftarRoute: typeof DaftarRoute
+  ErrorServerRoute: typeof ErrorServerRoute
   LupaSandiRoute: typeof LupaSandiRoute
   MasukRoute: typeof MasukRoute
+  PerawatanRoute: typeof PerawatanRoute
   ResetSandiRoute: typeof ResetSandiRoute
   VerifikasiEmailRoute: typeof VerifikasiEmailRoute
 }
@@ -516,6 +650,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetSandiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perawatan': {
+      id: '/perawatan'
+      path: '/perawatan'
+      fullPath: '/perawatan'
+      preLoaderRoute: typeof PerawatanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/masuk': {
       id: '/masuk'
       path: '/masuk'
@@ -528,6 +669,13 @@ declare module '@tanstack/react-router' {
       path: '/lupa-sandi'
       fullPath: '/lupa-sandi'
       preLoaderRoute: typeof LupaSandiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/error-server': {
+      id: '/error-server'
+      path: '/error-server'
+      fullPath: '/error-server'
+      preLoaderRoute: typeof ErrorServerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/daftar': {
@@ -733,6 +881,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBelajarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/': {
+      id: '/_app/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AppAdminIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/kuis/hasil': {
       id: '/_app/kuis/hasil'
       path: '/hasil'
@@ -773,6 +928,62 @@ declare module '@tanstack/react-router' {
       path: '/ai/catatan'
       fullPath: '/ai/catatan'
       preLoaderRoute: typeof AppAiCatatanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/prompt': {
+      id: '/_app/admin/prompt'
+      path: '/admin/prompt'
+      fullPath: '/admin/prompt'
+      preLoaderRoute: typeof AppAdminPromptRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/pengguna': {
+      id: '/_app/admin/pengguna'
+      path: '/admin/pengguna'
+      fullPath: '/admin/pengguna'
+      preLoaderRoute: typeof AppAdminPenggunaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/pengaturan': {
+      id: '/_app/admin/pengaturan'
+      path: '/admin/pengaturan'
+      fullPath: '/admin/pengaturan'
+      preLoaderRoute: typeof AppAdminPengaturanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/modul': {
+      id: '/_app/admin/modul'
+      path: '/admin/modul'
+      fullPath: '/admin/modul'
+      preLoaderRoute: typeof AppAdminModulRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/materi': {
+      id: '/_app/admin/materi'
+      path: '/admin/materi'
+      fullPath: '/admin/materi'
+      preLoaderRoute: typeof AppAdminMateriRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/json': {
+      id: '/_app/admin/json'
+      path: '/admin/json'
+      fullPath: '/admin/json'
+      preLoaderRoute: typeof AppAdminJsonRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/gambar': {
+      id: '/_app/admin/gambar'
+      path: '/admin/gambar'
+      fullPath: '/admin/gambar'
+      preLoaderRoute: typeof AppAdminGambarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/analitik': {
+      id: '/_app/admin/analitik'
+      path: '/admin/analitik'
+      fullPath: '/admin/analitik'
+      preLoaderRoute: typeof AppAdminAnalitikRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -828,10 +1039,19 @@ interface AppRouteChildren {
   AppTersimpanRoute: typeof AppTersimpanRoute
   AppUnduhanRoute: typeof AppUnduhanRoute
   AppVisualRoute: typeof AppVisualRoute
+  AppAdminAnalitikRoute: typeof AppAdminAnalitikRoute
+  AppAdminGambarRoute: typeof AppAdminGambarRoute
+  AppAdminJsonRoute: typeof AppAdminJsonRoute
+  AppAdminMateriRoute: typeof AppAdminMateriRoute
+  AppAdminModulRoute: typeof AppAdminModulRoute
+  AppAdminPengaturanRoute: typeof AppAdminPengaturanRoute
+  AppAdminPenggunaRoute: typeof AppAdminPenggunaRoute
+  AppAdminPromptRoute: typeof AppAdminPromptRoute
   AppAiCatatanRoute: typeof AppAiCatatanRoute
   AppAiChatRoute: typeof AppAiChatRoute
   AppAiJelaskanRoute: typeof AppAiJelaskanRoute
   AppAiRiwayatRoute: typeof AppAiRiwayatRoute
+  AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -861,10 +1081,19 @@ const AppRouteChildren: AppRouteChildren = {
   AppTersimpanRoute: AppTersimpanRoute,
   AppUnduhanRoute: AppUnduhanRoute,
   AppVisualRoute: AppVisualRoute,
+  AppAdminAnalitikRoute: AppAdminAnalitikRoute,
+  AppAdminGambarRoute: AppAdminGambarRoute,
+  AppAdminJsonRoute: AppAdminJsonRoute,
+  AppAdminMateriRoute: AppAdminMateriRoute,
+  AppAdminModulRoute: AppAdminModulRoute,
+  AppAdminPengaturanRoute: AppAdminPengaturanRoute,
+  AppAdminPenggunaRoute: AppAdminPenggunaRoute,
+  AppAdminPromptRoute: AppAdminPromptRoute,
   AppAiCatatanRoute: AppAiCatatanRoute,
   AppAiChatRoute: AppAiChatRoute,
   AppAiJelaskanRoute: AppAiJelaskanRoute,
   AppAiRiwayatRoute: AppAiRiwayatRoute,
+  AppAdminIndexRoute: AppAdminIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -873,11 +1102,23 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   DaftarRoute: DaftarRoute,
+  ErrorServerRoute: ErrorServerRoute,
   LupaSandiRoute: LupaSandiRoute,
   MasukRoute: MasukRoute,
+  PerawatanRoute: PerawatanRoute,
   ResetSandiRoute: ResetSandiRoute,
   VerifikasiEmailRoute: VerifikasiEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
