@@ -89,21 +89,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BrevetAI — Platform Belajar Brevet Pajak A & B" },
+      { title: "BrevetAI — Belajar Brevet Pajak A & B berbasis AI" },
       {
         name: "description",
         content:
-          "BrevetAI adalah platform belajar Brevet Pajak A & B modern berbasis AI. Belajar interaktif, roadmap terarah, kuis adaptif, dan asisten AI pribadi.",
+          "Platform belajar Brevet Pajak A & B modern berbasis AI. Roadmap terarah, materi interaktif, kuis adaptif, dan asisten AI pribadi.",
       },
       { name: "author", content: "BrevetAI" },
-      { property: "og:title", content: "BrevetAI — Platform Belajar Brevet Pajak A & B" },
+      { property: "og:title", content: "BrevetAI — Belajar Brevet Pajak A & B berbasis AI" },
       {
         property: "og:description",
         content:
-          "Belajar Brevet Pajak A & B dengan pengalaman AI-first: roadmap, materi interaktif, kuis, kartu belajar, dan asisten AI.",
+          "Platform belajar Brevet Pajak A & B modern berbasis AI. Roadmap terarah, materi interaktif, kuis adaptif, dan asisten AI pribadi.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "BrevetAI — Belajar Brevet Pajak A & B berbasis AI" },
+      { name: "twitter:description", content: "Platform belajar Brevet Pajak A & B modern berbasis AI. Roadmap terarah, materi interaktif, kuis adaptif, dan asisten AI pribadi." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3a3dd3fe-9d8a-484d-9c3f-d42c9137455c/id-preview-68abdf1a--cd26b6a7-537b-4951-ada8-a2513750fed1.lovable.app-1784983808660.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3a3dd3fe-9d8a-484d-9c3f-d42c9137455c/id-preview-68abdf1a--cd26b6a7-537b-4951-ada8-a2513750fed1.lovable.app-1784983808660.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
