@@ -1,12 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Lock, CheckCircle2, Play, ChevronDown, Trophy, Sparkles, Star } from "lucide-react";
+import { Lock, CheckCircle2, Star } from "lucide-react";
 import { PageHeader, PageBody } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { modules } from "@/lib/dummy";
+import { getRoadmap } from "@/functions/modules";
+import { modules as dummyModules } from "@/lib/dummy";
 
 export const Route = createFileRoute("/_app/roadmap")({
+  loader: async () => {
+    try {
+      const res = await getRoadmap();
+      return { roadmaps: res.success ? res.data : [] };
+    } catch {
+      return { roadmaps: [] };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Roadmap belajar — BrevetAI" },
@@ -17,6 +26,8 @@ export const Route = createFileRoute("/_app/roadmap")({
 });
 
 function Roadmap() {
+  const { roadmaps } = Route.useLoaderData();
+
   return (
     <>
       <PageHeader
@@ -46,7 +57,7 @@ function Roadmap() {
         <div className="relative">
           <div className="absolute left-6 top-4 bottom-4 w-px bg-border sm:left-8" />
           <ol className="space-y-4">
-            {modules.map((m, i) => {
+            {dummyModules.map((m, i) => {
               const locked = m.status === "Terkunci";
               const done = m.progress === 100;
               return (
@@ -79,28 +90,13 @@ function Roadmap() {
                       <Progress value={m.progress} className="h-1.5 flex-1" />
                       <span className="w-10 text-right text-xs text-muted-foreground">{m.progress}%</span>
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-4 flex items-center justify-between">
                       {locked ? (
-                        <Button size="sm" variant="outline" disabled>
-                          <Lock className="mr-1 h-3.5 w-3.5" /> Terkunci
-                        </Button>
+                        <span className="text-xs text-muted-foreground">Selesaikan modul sebelumnya</span>
                       ) : (
-                        <>
-                          <Button asChild size="sm">
-                            <Link to="/belajar/materi">{m.progress > 0 ? "Lanjut" : "Mulai"}</Link>
-                          </Button>
-                          <Button asChild size="sm" variant="outline">
-                            <Link to="/kuis">Kuis</Link>
-                          </Button>
-                          <Button asChild size="sm" variant="ghost">
-                            <Link to="/kartu">Kartu</Link>
-                          </Button>
-                          <Button asChild size="sm" variant="ghost">
-                            <Link to="/ai/chat">
-                              <Sparkles className="mr-1 h-3.5 w-3.5" /> Tanya
-                            </Link>
-                          </Button>
-                        </>
+                        <Button asChild size="sm">
+                          <Link to="/belajar/materi">{done ? "Ulangi Modul" : "Lanjutkan"}</Link>
+                        </Button>
                       )}
                     </div>
                   </div>

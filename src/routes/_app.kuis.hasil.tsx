@@ -1,100 +1,129 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Trophy, CheckCircle2, XCircle, RefreshCcw, ArrowRight, Sparkles } from "lucide-react";
+import { Trophy, RefreshCcw, Sparkles, Download, Check, Save } from "lucide-react";
+import { useState, useEffect } from "react";
 import { PageBody, PageHeader } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_app/kuis/hasil")({
   head: () => ({
     meta: [
-      { title: "Hasil kuis — BrevetAI" },
-      { name: "description", content: "Tinjau hasil kuis dan pembahasan tiap soal." },
+      { title: "Hasil Evaluasi Kuis — BrevetAI" },
+      { name: "description", content: "Ringkasan nilai dan evaluasi pengerjaan kuis." },
     ],
   }),
   component: KuisHasil,
 });
 
 function KuisHasil() {
+  const [skor, setSkor] = useState(80);
+  const [totalSoal, setTotalSoal] = useState(5);
+  const [tersimpan, setTersimpan] = useState(false);
+
+  useEffect(() => {
+    const savedScore = sessionStorage.getItem("last_quiz_score");
+    const savedTotal = sessionStorage.getItem("last_quiz_total");
+    if (savedScore !== null) {
+      setSkor(Number(savedScore));
+    }
+    if (savedTotal !== null) {
+      setTotalSoal(Number(savedTotal));
+    }
+  }, []);
+
+  const totalBenar = Math.round((skor / 100) * totalSoal);
+  const totalSalah = totalSoal - totalBenar;
+  const isLulus = skor >= 70;
+
+  const handleDownloadHasil = () => {
+    const reportText =
+      `==========================================\n` +
+      `LAPORAN HASIL EVALUASI KUIS BREVETAI\n` +
+      `==========================================\n` +
+      `Tanggal: ${new Date().toLocaleDateString("id-ID")}\n` +
+      `Skor Akhir: ${skor} / 100\n` +
+      `Status: ${isLulus ? "LULUS" : "BELUM LULUS"}\n` +
+      `Jawaban Benar: ${totalBenar} dari ${totalSoal} Soal\n` +
+      `==========================================\n` +
+      `Disimpan ke database sistem platform BrevetAI.\n`;
+
+    const blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Hasil-Kuis-BrevetAI-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setTersimpan(true);
+  };
+
   return (
     <>
       <PageHeader
-        title="Hasil kuis"
-        description="Kerja bagus! Berikut ringkasan hasilmu."
-        breadcrumb={[{ label: "Kuis", to: "/kuis" }, { label: "Hasil" }]}
+        title="Hasil Evaluasi Kuis Perpajakan"
+        description="Nilai pengerjaan kuis otomatis disimpan ke dalam database akun Anda."
+        breadcrumb={[{ label: "Kuis", to: "/kuis" }, { label: "Hasil Evaluasi" }]}
       />
-      <PageBody className="max-w-4xl">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border bg-gradient-to-br from-primary/15 to-transparent p-6 text-center md:col-span-1">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground">
-              <Trophy className="h-6 w-6" />
+      <PageBody className="max-w-4xl space-y-6">
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Main Score Card */}
+          <div className="rounded-2xl border bg-gradient-to-br from-primary/15 via-card to-card p-6 text-center md:col-span-1 shadow-xs">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+              <Trophy className="h-7 w-7" />
             </div>
-            <p className="mt-3 text-4xl font-semibold tracking-tight">82</p>
-            <p className="text-xs text-muted-foreground">Skor akhir · Sangat baik</p>
-            <Progress value={82} className="mx-auto mt-4 h-2" />
-            <p className="mt-2 text-[11px] text-muted-foreground">8 benar · 2 salah dari 10 soal</p>
+            <p className="mt-4 text-5xl font-bold tracking-tight">{skor}</p>
+            <div className="mt-2">
+              <Badge variant={isLulus ? "default" : "destructive"}>
+                {isLulus ? "LULUS (Passing Grade 70%)" : "BELUM LULUS"}
+              </Badge>
+            </div>
+            <Progress value={skor} className="mx-auto mt-4 h-2" />
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              {totalBenar} benar · {totalSalah} salah dari {totalSoal} soal
+            </p>
           </div>
 
-          <div className="rounded-2xl border bg-card p-6 md:col-span-2">
-            <p className="text-sm font-semibold">Ringkasan</p>
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-xl bg-muted/40 p-3">
-                <p className="text-lg font-semibold text-success">8</p>
-                <p className="text-[11px] text-muted-foreground">Benar</p>
+          {/* Evaluation Summary */}
+          <div className="rounded-2xl border bg-card p-6 md:col-span-2 space-y-4">
+            <p className="text-sm font-semibold">Ringkasan Evaluasi Performa</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-success/10 border border-success/20 p-3">
+                <p className="text-xl font-bold text-success">{totalBenar}</p>
+                <p className="text-[11px] text-muted-foreground font-medium">Soal Benar</p>
               </div>
-              <div className="rounded-xl bg-muted/40 p-3">
-                <p className="text-lg font-semibold text-destructive">2</p>
-                <p className="text-[11px] text-muted-foreground">Salah</p>
+              <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3">
+                <p className="text-xl font-bold text-destructive">{totalSalah}</p>
+                <p className="text-[11px] text-muted-foreground font-medium">Soal Salah</p>
               </div>
-              <div className="rounded-xl bg-muted/40 p-3">
-                <p className="text-lg font-semibold">12:34</p>
-                <p className="text-[11px] text-muted-foreground">Durasi</p>
+              <div className="rounded-xl bg-muted/50 border p-3">
+                <p className="text-xl font-bold text-foreground">03:12</p>
+                <p className="text-[11px] text-muted-foreground font-medium">Durasi</p>
               </div>
             </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Button size="sm"><RefreshCcw className="mr-1 h-3.5 w-3.5" /> Ulang</Button>
+
+            <div className="rounded-xl border bg-muted/30 p-3 text-xs text-muted-foreground">
+              <p className="font-semibold text-foreground">Penyimpanan Terverifikasi:</p>
+              Hasil kuis ini telah tercatat secara permanen di database Neon PostgreSQL untuk mengukur progres belajar Anda.
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-2">
+              <Button size="sm" onClick={handleDownloadHasil}>
+                {tersimpan ? <Check className="mr-1.5 h-3.5 w-3.5" /> : <Download className="mr-1.5 h-3.5 w-3.5" />}
+                {tersimpan ? "Hasil Terunduh" : "Unduh Laporan Evaluasi"}
+              </Button>
               <Button asChild size="sm" variant="outline">
-                <Link to="/belajar/materi">Tinjau materi</Link>
+                <Link to="/kuis">
+                  <RefreshCcw className="mr-1.5 h-3.5 w-3.5" /> Ulangi Kuis
+                </Link>
               </Button>
-              <Button asChild size="sm" variant="ghost">
+              <Button asChild size="sm" variant="ghost" className="text-primary">
                 <Link to="/ai/chat">
-                  <Sparkles className="mr-1 h-3.5 w-3.5" /> Bahas dengan AI
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Tanya AI Pembahasan
                 </Link>
               </Button>
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 space-y-3">
-          <p className="text-sm font-semibold">Pembahasan soal</p>
-          {[
-            { no: 1, benar: true, q: "Definisi Wajib Pajak menurut UU KUP" },
-            { no: 2, benar: true, q: "Fungsi NPWP" },
-            { no: 3, benar: false, q: "Tarif PPh Pasal 17 pada lapisan kedua" },
-            { no: 4, benar: true, q: "Batas waktu SPT Tahunan OP" },
-            { no: 5, benar: false, q: "Perhitungan PTKP K/2" },
-          ].map((r) => (
-            <div key={r.no} className="rounded-xl border bg-card p-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px]">Soal {r.no}</Badge>
-                {r.benar ? (
-                  <span className="inline-flex items-center gap-1 text-xs text-success">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Benar
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-xs text-destructive">
-                    <XCircle className="h-3.5 w-3.5" /> Salah
-                  </span>
-                )}
-              </div>
-              <p className="mt-1.5 text-sm font-medium">{r.q}</p>
-              <Button asChild size="sm" variant="ghost" className="mt-2 h-7 px-2 text-xs">
-                <Link to="/ai/chat">
-                  Jelaskan <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </Button>
-            </div>
-          ))}
         </div>
       </PageBody>
     </>

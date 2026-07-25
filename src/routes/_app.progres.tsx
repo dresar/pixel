@@ -2,9 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3, TrendingUp, Clock, Flame, Target, BookOpen } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/layout/AppShell";
 import { Progress } from "@/components/ui/progress";
-import { modules } from "@/lib/dummy";
+import { modules as dummyModules } from "@/lib/dummy";
+import { getDaftarModul } from "@/functions/modules";
 
 export const Route = createFileRoute("/_app/progres")({
+  loader: async () => {
+    try {
+      const res = await getDaftarModul({ data: { halaman: 1, per_halaman: 10 } });
+      return { modulList: res.success && res.data ? res.data : [] };
+    } catch {
+      return { modulList: [] };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Progres — BrevetAI" },
@@ -15,16 +24,19 @@ export const Route = createFileRoute("/_app/progres")({
 });
 
 function Progres() {
+  const { modulList } = Route.useLoaderData();
+  const displayModules = modulList.length > 0 ? modulList : dummyModules;
+
   return (
     <>
       <PageHeader title="Progres belajar" description="Ringkasan performa dan aktivitas belajarmu." />
       <PageBody>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Jam belajar", value: "42j", hint: "+5j minggu ini", icon: Clock },
-            { label: "Streak", value: "14 hari", hint: "Terus jaga!", icon: Flame },
-            { label: "Materi selesai", value: "24", hint: "dari 73", icon: BookOpen },
-            { label: "Target minggu", value: "80%", hint: "8 dari 10 jam", icon: Target },
+            { label: "Jam belajar", value: "42 jam", hint: "+5 jam minggu ini", icon: Clock },
+            { label: "Streak Belajar", value: "14 hari", hint: "Aktif setiap hari!", icon: Flame },
+            { label: "Materi selesai", value: "24 materi", hint: "dari total 73", icon: BookOpen },
+            { label: "Target Mingguan", value: "80%", hint: "8 dari 10 jam", icon: Target },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl border bg-card p-4">
               <div className="flex items-center justify-between">
@@ -47,21 +59,23 @@ function Progres() {
               {[40, 55, 70, 60, 82, 90, 65].map((h, i) => (
                 <div key={i} className="flex flex-1 flex-col items-center gap-2">
                   <div className="w-full rounded-t-md bg-primary/70" style={{ height: h + "%" }} />
-                  <span className="text-[10px] text-muted-foreground">{["Sen","Sel","Rab","Kam","Jum","Sab","Min"][i]}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"][i]}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
           <div className="rounded-2xl border bg-card p-5">
-            <p className="text-sm font-semibold">Progres modul</p>
+            <p className="text-sm font-semibold">Progres Modul Pembelajaran</p>
             <ul className="mt-3 space-y-3">
-              {modules.slice(0, 4).map((m) => (
+              {displayModules.slice(0, 5).map((m: any) => (
                 <li key={m.id}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="truncate">{m.short}</span>
-                    <span className="text-muted-foreground">{m.progress}%</span>
+                    <span className="truncate font-medium">{m.judul || m.title}</span>
+                    <span className="text-muted-foreground">{m.progress || 35}%</span>
                   </div>
-                  <Progress value={m.progress} className="mt-1.5 h-1.5" />
+                  <Progress value={m.progress || 35} className="mt-1.5 h-1.5" />
                 </li>
               ))}
             </ul>

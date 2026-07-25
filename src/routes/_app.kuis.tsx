@@ -1,109 +1,193 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
-import { Clock, ChevronLeft, ChevronRight, CheckCircle2, Sparkles, Flag } from "lucide-react";
+import { Clock, ChevronRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { quizQuestion } from "@/lib/dummy";
-import { Link } from "@tanstack/react-router";
+import { getDetailKuis, kirimHasilKuis } from "@/functions/quiz";
 
 export const Route = createFileRoute("/_app/kuis")({
+  loader: async () => {
+    try {
+      const res = await getDetailKuis({ data: {} });
+      return { quizData: res.success && res.data ? res.data : null };
+    } catch {
+      return { quizData: null };
+    }
+  },
   head: () => ({
     meta: [
-      { title: "Kuis — BrevetAI" },
+      { title: "Kuis Perpajakan — BrevetAI" },
       { name: "description", content: "Uji pemahaman materi Brevet Pajak dengan kuis adaptif dan pembahasan." },
     ],
   }),
-  component: Kuis,
+  component: KuisLayout,
 });
 
-function Kuis() {
-  const [selected, setSelected] = useState<string | null>(null);
-  const q = quizQuestion;
+function KuisLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // If subroute like /kuis/hasil is active, render Outlet!
+  if (pathname !== "/kuis" && pathname !== "/kuis/") {
+    return <Outlet />;
+  }
+
+  return <KuisComponent />;
+}
+
+function KuisComponent() {
+  const navigate = useNavigate();
+  const { quizData } = Route.useLoaderData();
+  const [index, setIndex] = useState(0);
+  const [jawabanUser, setJawabanUser] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const questions = quizData?.questions || [];
+  const q = questions[index];
+
+  if (!q) {
+    return (
+      <>
+        <PageHeader title="Kuis Evaluasi" description="Pengerjaan kuis evaluasi materi Brevet Pajak." />
+        <PageBody className="max-w-xl text-center py-12">
+          <div className="rounded-2xl border bg-card p-8">
+            <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground" />
+            <h2 className="mt-4 text-base font-semibold">Belum Ada Soal Kuis Tersedia</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Soal kuis belum diunggah ke database. Silakan masuk sebagai Admin untuk menambahkan kuis baru.
+            </p>
+          </div>
+        </PageBody>
+      </>
+    );
+  }
+
+  const handlePilih = (optionId: string) => {
+    setJawabanUser({ ...jawabanUser, [q.id]: optionId });
+  };
+
+  const handleBerikutnya = async () => {
+    if (index < questions.length - 1) {
+      setIndex(index + 1);
+    } else {
+      setSubmitting(true);
+      let totalPoin = 0;
+      let dapaPoin = 0;
+
+      questions.forEach((question: any) => {
+        totalPoin += question.poin || 20;
+        const userChoiceId = jawabanUser[question.id];
+        const correctOpt = question.options?.find((o: any) => o.adalahBenar);
+        if (userChoiceId && correctOpt && userChoiceId === correctOpt.id) {
+          dapaPoin += question.poin || 20;
+        }
+      });
+
+      const nilaiPersen = Math.round((dapaPoin / Math.max(totalPoin, 1)) * 100);
+      const isLulus = nilaiPersen >= 70;
+
+      try {
+        await kirimHasilKuis({
+          data: {
+            quizId: quizData?.quizId || "",
+            skor: dapaPoin,
+            nilaiPersen,
+            lulus: isLulus,
+            durasiDetik: 180,
+          },
+        });
+      } catch {
+        // Fallback local state if session issues
+      } finally {
+        sessionStorage.setItem("last_quiz_score", String(nilaiPersen));
+        sessionStorage.setItem("last_quiz_total", String(questions.length));
+        setSubmitting(false);
+        navigate({ to: "/kuis/hasil" });
+      }
+    }
+  };
 
   return (
     <>
       <PageHeader
-        title="Kuis mingguan"
-        description="PPh Orang Pribadi · Bab 2 Tarif & Perhitungan"
+        title="Kuis Evaluasi Brevet Pajak A & B"
+        description="Soal evaluasi resmi yang diambil dari database platform BrevetAI."
         breadcrumb={[{ label: "Belajar", to: "/belajar" }, { label: "Kuis" }]}
         actions={
-          <div className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-sm">
-            <Clock className="h-4 w-4 text-primary" />
-            <span className="tabular-nums">12:34</span>
+          <div className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-mono">
+            <Clock className="h-3.5 w-3.5 text-primary" />
+            <span>12:00</span>
           </div>
         }
       />
       <PageBody className="max-w-3xl">
         <div className="flex items-center gap-3">
-          <Progress value={(q.no / q.total) * 100} className="h-2" />
-          <span className="shrink-0 text-xs text-muted-foreground">
-            Soal {q.no} / {q.total}
+          <Progress value={((index + 1) / questions.length) * 100} className="h-2" />
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+            Soal {index + 1} dari {questions.length}
           </span>
         </div>
 
-        <div className="mt-6 rounded-2xl border bg-card p-5 sm:p-7">
-          <Badge variant="secondary" className="text-[10px]">Pilihan ganda</Badge>
-          <h2 className="mt-3 text-lg font-semibold leading-snug sm:text-xl">{q.question}</h2>
+        <div className="mt-6 rounded-2xl border bg-card p-5 sm:p-7 shadow-xs">
+          <div className="flex items-center justify-between">
+            <Badge variant="outline">KUP & PPh</Badge>
+            <Badge variant="secondary" className="text-[10px]">Pilihan Ganda</Badge>
+          </div>
 
-          <div className="mt-5 space-y-2.5">
-            {q.options.map((o) => {
-              const active = selected === o.key;
+          <h2 className="mt-4 text-base font-semibold leading-relaxed sm:text-lg">
+            {q.pertanyaanTeks}
+          </h2>
+
+          <div className="mt-6 space-y-3">
+            {q.options?.map((o: any, idx: number) => {
+              const selected = jawabanUser[q.id] === o.id;
+              const letter = String.fromCharCode(65 + idx);
               return (
                 <button
-                  key={o.key}
-                  onClick={() => setSelected(o.key)}
+                  key={o.id}
+                  onClick={() => handlePilih(o.id)}
                   className={
-                    "flex w-full items-center gap-3 rounded-xl border p-4 text-left text-sm transition-colors " +
-                    (active
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "hover:bg-accent/40")
+                    "flex w-full items-center gap-3 rounded-xl border p-4 text-left text-xs sm:text-sm transition-all " +
+                    (selected
+                      ? "border-primary bg-primary/10 font-semibold ring-2 ring-primary/40 shadow-xs text-primary"
+                      : "hover:bg-accent/50")
                   }
                 >
                   <span
                     className={
-                      "grid h-7 w-7 shrink-0 place-items-center rounded-lg border text-xs font-semibold " +
-                      (active ? "border-primary bg-primary text-primary-foreground" : "bg-muted")
+                      "grid h-6 w-6 shrink-0 place-items-center rounded-lg border text-xs font-bold " +
+                      (selected ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground")
                     }
                   >
-                    {o.key}
+                    {letter}
                   </span>
-                  <span className="flex-1">{o.text}</span>
-                  {active && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                  <span className="flex-1">{o.teksOpsi}</span>
+                  {selected && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-6 flex items-center justify-between">
-            <Button variant="outline" size="sm">
-              <ChevronLeft className="mr-1 h-4 w-4" /> Sebelum
+          <div className="mt-7 flex items-center justify-between border-t pt-5">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={index === 0}
+              onClick={() => setIndex(index - 1)}
+            >
+              Sebelumnya
             </Button>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
-                <Flag className="mr-1 h-4 w-4" /> Tandai
-              </Button>
-              <Button asChild size="sm">
-                <Link to="/kuis/hasil">
-                  Berikut <ChevronRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
 
-        <div className="mt-4 rounded-2xl border bg-gradient-to-br from-primary/10 to-transparent p-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <p className="text-sm font-medium">Butuh bantuan?</p>
+            <Button
+              size="sm"
+              onClick={handleBerikutnya}
+              disabled={!jawabanUser[q.id] || submitting}
+            >
+              {index === questions.length - 1 ? "Selesaikan & Simpan ke DB" : "Soal Berikutnya"}
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            AI dapat menjelaskan konsep tarif progresif tanpa memberikan jawaban langsung.
-          </p>
-          <Button asChild size="sm" variant="outline" className="mt-3">
-            <Link to="/ai/chat">Tanya AI</Link>
-          </Button>
         </div>
       </PageBody>
     </>

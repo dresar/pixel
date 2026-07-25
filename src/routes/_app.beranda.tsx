@@ -9,18 +9,35 @@ import {
   BookOpen,
   ChevronRight,
   Zap,
+  Info,
+  Boxes,
 } from "lucide-react";
 import { PageBody } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { currentUser, modules, recentLessons, achievements, leaderboard } from "@/lib/dummy";
+import { getProfilPengguna } from "@/functions/users";
+import { getDaftarModul } from "@/functions/modules";
 
 export const Route = createFileRoute("/_app/beranda")({
+  loader: async () => {
+    try {
+      const [userRes, modulRes] = await Promise.all([
+        getProfilPengguna(),
+        getDaftarModul({ data: { halaman: 1, per_halaman: 10 } }),
+      ]);
+      return {
+        profile: userRes.success ? userRes.data : null,
+        modulList: modulRes.success && modulRes.data ? modulRes.data : [],
+      };
+    } catch {
+      return { profile: null, modulList: [] };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Beranda — BrevetAI" },
-      { name: "description", content: "Ringkasan progres belajar, materi terakhir, dan rekomendasi AI." },
+      { name: "description", content: "Ringkasan progres belajar, modul aktif, dan rekomendasi AI." },
     ],
   }),
   component: Beranda,
@@ -42,189 +59,146 @@ function StatCard({ label, value, hint, icon: Icon }: any) {
 }
 
 function Beranda() {
+  const { profile, modulList } = Route.useLoaderData();
   const hour = new Date().getHours();
   const greet = hour < 11 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 19 ? "Selamat sore" : "Selamat malam";
+  const userName = profile?.namaLengkap || profile?.name || "Siswa Brevet";
+  const userRole = profile?.peran === "SUPER_ADMIN" ? "Super Admin" : profile?.peran === "ADMIN" ? "Admin Konten" : "Siswa Brevet A & B";
+
+  const activeModule = modulList.length > 0 ? modulList[0] : null;
 
   return (
-    <PageBody className="space-y-6">
-      {/* Welcome */}
-      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-7">
+    <PageBody className="space-y-6 max-w-7xl">
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-7 shadow-xs">
         <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
         <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:justify-between">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{greet},</p>
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{currentUser.name} 👋</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Lanjutkan modul <span className="font-medium text-foreground">PPh Orang Pribadi</span> — 6 menit lagi
-              selesai.
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{userName} 👋</h1>
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+              {userRole} · Siap melanjutkan kurikulum pembelajaran Brevet Pajak A & B?
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Button asChild size="sm">
-                <Link to="/belajar/materi">Lanjut</Link>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link to="/ai/chat">
-                  <Sparkles className="mr-1 h-3.5 w-3.5" /> Tanya AI
-                </Link>
-              </Button>
-            </div>
           </div>
-          <div className="shrink-0 rounded-xl border bg-card px-3 py-2 text-right">
-            <p className="text-[10px] text-muted-foreground">Streak</p>
-            <p className="flex items-center justify-end gap-1 text-lg font-semibold">
-              <Flame className="h-4 w-4 text-warning" /> {currentUser.streak}
-            </p>
-            <p className="text-[10px] text-muted-foreground">hari</p>
-          </div>
+          <Button asChild size="lg" className="h-10 shadow-sm">
+            <Link to="/belajar">
+              <Play className="mr-2 h-4 w-4 fill-current" /> Mulai Belajar
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="XP total" value={currentUser.xp.toLocaleString("id-ID")} hint={`Level ${currentUser.level}`} icon={Zap} />
-        <StatCard label="Materi tuntas" value="24" hint="dari 73 materi" icon={BookOpen} />
-        <StatCard label="Kuis lulus" value="18" hint="rata-rata skor 82" icon={Trophy} />
-        <StatCard label="Jam belajar" value="42j" hint="minggu ini 5j" icon={Clock} />
+      {/* Stats Grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Rentetan Belajar" value="14 Hari" hint="Aktif setiap hari!" icon={Flame} />
+        <StatCard label="Poin XP Terkumpul" value="1.450 XP" hint="Level 3 · Pembelajar Aktif" icon={Zap} />
+        <StatCard label="Modul Tersedia" value={`${modulList.length} Modul`} hint="Kurikulum Brevet A & B" icon={BookOpen} />
+        <StatCard label="Waktu Belajar" value="14,5 Jam" hint="Total sesi pengerjaan" icon={Clock} />
       </div>
 
+      {/* Main Content Layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Continue learning */}
-        <section className="space-y-3 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Lanjut belajar</h2>
-            <Link to="/belajar" className="text-xs font-medium text-primary hover:underline">
-              Lihat semua
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {recentLessons.map((l) => (
-              <Link
-                key={l.id}
-                to="/belajar/materi"
-                className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px]">{l.module}</Badge>
-                    <span className="text-[11px] text-muted-foreground">{l.duration}</span>
-                  </div>
-                  <p className="mt-1 truncate text-sm font-medium">{l.title}</p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <Progress value={l.progress} className="h-1.5" />
-                    <span className="w-10 shrink-0 text-right text-[11px] text-muted-foreground">{l.progress}%</span>
-                  </div>
+        {/* Left Column (2 Span) */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Active Module Card */}
+          {activeModule ? (
+            <div className="rounded-2xl border bg-card p-5 sm:p-6 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Badge variant="outline" className="text-[10px]">Modul Aktif Saat Ini</Badge>
+                  <h2 className="mt-1 text-base font-semibold">{activeModule.judul}</h2>
                 </div>
-                <Button size="icon" variant="ghost" className="shrink-0">
-                  <Play className="h-4 w-4" />
-                </Button>
-              </Link>
-            ))}
-          </div>
-
-          {/* Modules */}
-          <div className="mt-6 flex items-center justify-between">
-            <h2 className="text-base font-semibold">Modul kamu</h2>
-            <Link to="/roadmap" className="text-xs font-medium text-primary hover:underline">
-              Roadmap
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {modules.slice(0, 4).map((m) => (
-              <div key={m.id} className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${m.color} p-4`}>
-                <div className="rounded-lg bg-card/70 p-3 backdrop-blur">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-[10px]">{m.code}</Badge>
-                    <span className="text-[10px] text-muted-foreground">{m.difficulty}</span>
-                  </div>
-                  <p className="mt-2 line-clamp-2 text-sm font-semibold">{m.title}</p>
-                  <div className="mt-3 flex items-center gap-2">
-                    <Progress value={m.progress} className="h-1.5 flex-1" />
-                    <span className="text-[11px] text-muted-foreground">{m.progress}%</span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>{m.lessons} materi · {m.duration}</span>
-                    <Button asChild size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs">
-                      <Link to="/belajar">
-                        Buka <ChevronRight className="h-3 w-3" />
-                      </Link>
-                    </Button>
-                  </div>
+                <span className="text-xs text-muted-foreground">35% Selesai</span>
+              </div>
+              <Progress value={35} className="mt-3 h-2" />
+              <div className="mt-4 rounded-xl border bg-muted/30 p-4">
+                <p className="text-xs text-muted-foreground">Topik Pelajaran Berikutnya:</p>
+                <p className="mt-1 text-sm font-semibold">Pengenalan Dasar & Ketentuan Umum Perpajakan</p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Estimasi {activeModule.estimasiMenit || 60} menit</span>
+                  <Link
+                    to="/belajar/materi/$slug"
+                    params={{ slug: activeModule.slug || "tarif-pph-pasal-17-op" }}
+                    className="flex h-8 items-center gap-1.5 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-semibold hover:bg-secondary/80 transition-colors"
+                  >
+                    Lanjutkan <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Sidebar column */}
-        <aside className="space-y-6">
-          <div className="rounded-2xl border bg-gradient-to-br from-primary/10 to-transparent p-5">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <p className="text-sm font-semibold">Rekomendasi AI</p>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Kamu terlihat kuat di KUP. Waktunya menantang diri dengan kuis PPh OP tingkat menengah.
+          ) : (
+            <div className="rounded-2xl border bg-card p-6 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-muted text-muted-foreground">
+                <Boxes className="h-6 w-6" />
+              </div>
+              <h3 className="mt-3 text-sm font-semibold">Belum Ada Modul Aktif</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Modul pembelajaran belum tersedia di database.
+              </p>
+            </div>
+          )}
+
+          {/* Module List Grid */}
+          <div className="rounded-2xl border bg-card p-5 sm:p-6 shadow-xs">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold">Semua Modul Pembelajaran</h2>
+              <Button asChild variant="ghost" size="sm" className="text-xs">
+                <Link to="/belajar">Lihat Semua <ChevronRight className="ml-1 h-3.5 w-3.5" /></Link>
+              </Button>
+            </div>
+            {modulList.length > 0 ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {modulList.map((m: any) => (
+                  <div key={m.id} className="rounded-xl border p-4 transition-all hover:border-primary/50">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-[10px]">
+                        {m.code || m.slug?.slice(0, 8).toUpperCase() || "MODUL"}
+                      </Badge>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {m.tingkatKesulitan || m.difficulty || "DASAR"}
+                      </Badge>
+                    </div>
+                    <h3 className="mt-2 text-sm font-semibold">{m.judul}</h3>
+                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{m.estimasiMenit || 60} menit</span>
+                      <Button asChild size="sm" variant="ghost" className="h-6 text-[11px] px-2">
+                        <Link to="/belajar/materi">Buka Materi</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">
+                Belum ada modul yang dipublikasikan di database.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* AI Recommendation */}
+          <div className="rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card p-5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold">Tanya AI Brevet</h3>
+                <p className="text-[11px] text-muted-foreground">Asisten Pajak Cerdas 24/7</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              Punya pertanyaan seputar aturan PPh 21 TER, kalkulasi PPN 11%, atau PTKP terbaru? Tanyakan langsung ke AI.
             </p>
-            <Button asChild size="sm" className="mt-3">
-              <Link to="/kuis">
-                Mulai kuis <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            <Button asChild size="sm" className="mt-4 w-full">
+              <Link to="/ai/chat">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Konsultasi AI Sekarang
               </Link>
             </Button>
           </div>
-
-          <div className="rounded-2xl border bg-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Pencapaian</p>
-              <Link to="/pencapaian" className="text-xs text-primary hover:underline">Semua</Link>
-            </div>
-            <ul className="mt-3 space-y-3">
-              {achievements.slice(0, 3).map((a) => (
-                <li key={a.id} className="flex items-center gap-3">
-                  <div
-                    className={
-                      "grid h-9 w-9 shrink-0 place-items-center rounded-lg " +
-                      (a.earned ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")
-                    }
-                  >
-                    <Trophy className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{a.title}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{a.desc}</p>
-                  </div>
-                  {a.earned && <Badge variant="secondary" className="ml-auto">Dapat</Badge>}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-2xl border bg-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Peringkat</p>
-              <Link to="/peringkat" className="text-xs text-primary hover:underline">Lihat</Link>
-            </div>
-            <ul className="mt-3 space-y-2">
-              {leaderboard.slice(0, 5).map((u) => (
-                <li
-                  key={u.rank}
-                  className={
-                    "flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm " +
-                    (u.self ? "bg-primary/5" : "")
-                  }
-                >
-                  <span className="grid h-6 w-6 place-items-center rounded-md bg-muted text-[11px] font-semibold">
-                    {u.rank}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm">{u.name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{u.city}</p>
-                  </div>
-                  <span className="text-xs font-semibold text-primary">{u.xp} XP</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </aside>
+        </div>
       </div>
     </PageBody>
   );

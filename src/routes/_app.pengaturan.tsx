@@ -1,13 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, Palette, Globe, Shield, CreditCard, KeyRound, Trash2 } from "lucide-react";
+import { Bell, Palette, Shield, Save, Check, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { PageBody, PageHeader } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { getProfilPengguna, updateProfilPengguna } from "@/functions/users";
 
 export const Route = createFileRoute("/_app/pengaturan")({
+  loader: async () => {
+    try {
+      const res = await getProfilPengguna();
+      return { profile: res.success ? res.data : null };
+    } catch {
+      return { profile: null };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Pengaturan — BrevetAI" },
@@ -49,77 +59,85 @@ function Row({ label, hint, control }: any) {
 }
 
 function Pengaturan() {
+  const { profile } = Route.useLoaderData();
+  const [namaLengkap, setNamaLengkap] = useState(profile?.namaLengkap || profile?.name || "");
+  const [bio, setBio] = useState(profile?.bio || "");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSimpanProfil = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const res = await updateProfilPengguna({ data: { namaLengkap, bio } });
+      if (res.success) {
+        setStatus("Profil berhasil diperbarui!");
+      } else {
+        setStatus(`Gagal: ${res.message}`);
+      }
+    } catch {
+      setStatus("Terjadi kesalahan koneksi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
-      <PageHeader title="Pengaturan" description="Kelola akun dan preferensi belajarmu." />
+      <PageHeader title="Pengaturan Akun" description="Kelola profil, tampilan, dan preferensi belajarmu." />
       <PageBody className="max-w-3xl space-y-5">
-        <Section icon={Palette} title="Tampilan" desc="Atur tema dan pengalaman visual.">
-          <Row label="Mode gelap" hint="Aktifkan tampilan gelap untuk mata lebih nyaman." control={<Switch defaultChecked />} />
-          <Row label="Font besar" hint="Perbesar teks untuk keterbacaan." control={<Switch />} />
-          <Row label="Animasi halus" hint="Aktifkan transisi mikro." control={<Switch defaultChecked />} />
-        </Section>
-
-        <Section icon={Bell} title="Notifikasi" desc="Pilih jenis notifikasi yang ingin kamu terima.">
-          <Row label="Pengingat belajar harian" control={<Switch defaultChecked />} />
-          <Row label="Materi & kuis baru" control={<Switch defaultChecked />} />
-          <Row label="Peringkat mingguan" control={<Switch />} />
-        </Section>
-
-        <Section icon={Globe} title="Preferensi" desc="Pengaturan umum aplikasi.">
-          <Row
-            label="Bahasa"
-            control={
-              <Select defaultValue="id">
-                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="id">Bahasa Indonesia</SelectItem>
-                </SelectContent>
-              </Select>
-            }
-          />
-          <Row
-            label="Zona waktu"
-            control={
-              <Select defaultValue="wib">
-                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="wib">WIB (UTC+7)</SelectItem>
-                  <SelectItem value="wita">WITA (UTC+8)</SelectItem>
-                  <SelectItem value="wit">WIT (UTC+9)</SelectItem>
-                </SelectContent>
-              </Select>
-            }
-          />
-        </Section>
-
-        <Section icon={KeyRound} title="Keamanan" desc="Kata sandi dan sesi aktif.">
-          <div className="space-y-3">
-            <div className="grid gap-1.5">
-              <Label>Kata sandi saat ini</Label>
-              <Input type="password" placeholder="••••••••" />
+        <form onSubmit={handleSimpanProfil}>
+          <Section icon={Shield} title="Informasi Profil" desc="Perbarui nama lengkap dan bio profil Anda.">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="nama">Nama Lengkap</Label>
+                <Input
+                  id="nama"
+                  value={namaLengkap}
+                  onChange={(e) => setNamaLengkap(e.target.value)}
+                  placeholder="Nama lengkap Anda"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" value={profile?.email || ""} disabled className="mt-1 bg-muted" />
+                <p className="mt-1 text-[11px] text-muted-foreground">Email terikat pada akun autentikasi.</p>
+              </div>
+              <div>
+                <Label htmlFor="bio">Bio Singkat</Label>
+                <Textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Ceritakan sedikit tentang latar belakang atau target belajarmu..."
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+              {status && (
+                <div className="rounded-lg bg-primary/10 p-3 text-xs font-medium text-primary flex items-center gap-2">
+                  <Check className="h-4 w-4" /> {status}
+                </div>
+              )}
+              <Button type="submit" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Simpan Perubahan
+              </Button>
             </div>
-            <div className="grid gap-1.5">
-              <Label>Kata sandi baru</Label>
-              <Input type="password" placeholder="Minimal 8 karakter" />
-            </div>
-            <Button size="sm">Simpan</Button>
-          </div>
+          </Section>
+        </form>
+
+        <Section icon={Palette} title="Tampilan & Preferensi" desc="Atur pengalaman visual.">
+          <Row label="Mode gelap" hint="Tampilan gelap aktif secara default." control={<Switch defaultChecked disabled />} />
+          <Row label="Animasi halus" hint="Aktifkan transisi mikro pada UI." control={<Switch defaultChecked />} />
         </Section>
 
-        <Section icon={CreditCard} title="Langganan" desc="Paket dan pembayaran.">
-          <Row
-            label="Paket saat ini"
-            hint="Pelajar — Rp99.000/bulan"
-            control={<Button size="sm" variant="outline">Kelola</Button>}
-          />
-        </Section>
-
-        <Section icon={Shield} title="Akun">
-          <Row
-            label="Hapus akun"
-            hint="Tindakan permanen. Semua datamu akan dihapus."
-            control={<Button size="sm" variant="destructive"><Trash2 className="mr-1 h-3.5 w-3.5" /> Hapus</Button>}
-          />
+        <Section icon={Bell} title="Notifikasi" desc="Kelola pemberitahuan email dan sistem.">
+          <Row label="Email pengingat belajar" hint="Kirim rangkuman pengingat mingguan." control={<Switch defaultChecked />} />
+          <Row label="Notifikasi kuis baru" hint="Beri tahu saat kuis baru dirilis." control={<Switch defaultChecked />} />
         </Section>
       </PageBody>
     </>

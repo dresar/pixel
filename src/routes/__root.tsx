@@ -138,7 +138,7 @@ function RootShell({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
@@ -153,7 +153,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <Outlet />
-        <Toaster />
+        <Toaster position="top-right" />
       </ThemeProvider>
     </QueryClientProvider>
   );
