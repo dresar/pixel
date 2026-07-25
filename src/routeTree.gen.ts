@@ -16,9 +16,14 @@ import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
 import { Route as DaftarRouteImport } from './routes/daftar'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppUnduhanRouteImport } from './routes/_app.unduhan'
+import { Route as AppTersimpanRouteImport } from './routes/_app.tersimpan'
+import { Route as AppSorotanRouteImport } from './routes/_app.sorotan'
 import { Route as AppSertifikatRouteImport } from './routes/_app.sertifikat'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
 import { Route as AppRencanaRouteImport } from './routes/_app.rencana'
+import { Route as AppReferensiRouteImport } from './routes/_app.referensi'
 import { Route as AppProgresRouteImport } from './routes/_app.progres'
 import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as AppPomodoroRouteImport } from './routes/_app.pomodoro'
@@ -71,6 +76,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppUnduhanRoute = AppUnduhanRouteImport.update({
+  id: '/unduhan',
+  path: '/unduhan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTersimpanRoute = AppTersimpanRouteImport.update({
+  id: '/tersimpan',
+  path: '/tersimpan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSorotanRoute = AppSorotanRouteImport.update({
+  id: '/sorotan',
+  path: '/sorotan',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSertifikatRoute = AppSertifikatRouteImport.update({
   id: '/sertifikat',
   path: '/sertifikat',
@@ -81,9 +101,19 @@ const AppRoadmapRoute = AppRoadmapRouteImport.update({
   path: '/roadmap',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRiwayatRoute = AppRiwayatRouteImport.update({
+  id: '/riwayat',
+  path: '/riwayat',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRencanaRoute = AppRencanaRouteImport.update({
   id: '/rencana',
   path: '/rencana',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReferensiRoute = AppReferensiRouteImport.update({
+  id: '/referensi',
+  path: '/referensi',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProgresRoute = AppProgresRouteImport.update({
@@ -193,9 +223,14 @@ export interface FileRoutesByFullPath {
   '/pomodoro': typeof AppPomodoroRoute
   '/profil': typeof AppProfilRoute
   '/progres': typeof AppProgresRoute
+  '/referensi': typeof AppReferensiRoute
   '/rencana': typeof AppRencanaRoute
+  '/riwayat': typeof AppRiwayatRoute
   '/roadmap': typeof AppRoadmapRoute
   '/sertifikat': typeof AppSertifikatRoute
+  '/sorotan': typeof AppSorotanRoute
+  '/tersimpan': typeof AppTersimpanRoute
+  '/unduhan': typeof AppUnduhanRoute
   '/ai/chat': typeof AppAiChatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
@@ -221,9 +256,14 @@ export interface FileRoutesByTo {
   '/pomodoro': typeof AppPomodoroRoute
   '/profil': typeof AppProfilRoute
   '/progres': typeof AppProgresRoute
+  '/referensi': typeof AppReferensiRoute
   '/rencana': typeof AppRencanaRoute
+  '/riwayat': typeof AppRiwayatRoute
   '/roadmap': typeof AppRoadmapRoute
   '/sertifikat': typeof AppSertifikatRoute
+  '/sorotan': typeof AppSorotanRoute
+  '/tersimpan': typeof AppTersimpanRoute
+  '/unduhan': typeof AppUnduhanRoute
   '/ai/chat': typeof AppAiChatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
@@ -251,9 +291,14 @@ export interface FileRoutesById {
   '/_app/pomodoro': typeof AppPomodoroRoute
   '/_app/profil': typeof AppProfilRoute
   '/_app/progres': typeof AppProgresRoute
+  '/_app/referensi': typeof AppReferensiRoute
   '/_app/rencana': typeof AppRencanaRoute
+  '/_app/riwayat': typeof AppRiwayatRoute
   '/_app/roadmap': typeof AppRoadmapRoute
   '/_app/sertifikat': typeof AppSertifikatRoute
+  '/_app/sorotan': typeof AppSorotanRoute
+  '/_app/tersimpan': typeof AppTersimpanRoute
+  '/_app/unduhan': typeof AppUnduhanRoute
   '/_app/ai/chat': typeof AppAiChatRoute
   '/_app/belajar/materi': typeof AppBelajarMateriRoute
   '/_app/kuis/hasil': typeof AppKuisHasilRoute
@@ -281,9 +326,14 @@ export interface FileRouteTypes {
     | '/pomodoro'
     | '/profil'
     | '/progres'
+    | '/referensi'
     | '/rencana'
+    | '/riwayat'
     | '/roadmap'
     | '/sertifikat'
+    | '/sorotan'
+    | '/tersimpan'
+    | '/unduhan'
     | '/ai/chat'
     | '/belajar/materi'
     | '/kuis/hasil'
@@ -309,9 +359,14 @@ export interface FileRouteTypes {
     | '/pomodoro'
     | '/profil'
     | '/progres'
+    | '/referensi'
     | '/rencana'
+    | '/riwayat'
     | '/roadmap'
     | '/sertifikat'
+    | '/sorotan'
+    | '/tersimpan'
+    | '/unduhan'
     | '/ai/chat'
     | '/belajar/materi'
     | '/kuis/hasil'
@@ -338,9 +393,14 @@ export interface FileRouteTypes {
     | '/_app/pomodoro'
     | '/_app/profil'
     | '/_app/progres'
+    | '/_app/referensi'
     | '/_app/rencana'
+    | '/_app/riwayat'
     | '/_app/roadmap'
     | '/_app/sertifikat'
+    | '/_app/sorotan'
+    | '/_app/tersimpan'
+    | '/_app/unduhan'
     | '/_app/ai/chat'
     | '/_app/belajar/materi'
     | '/_app/kuis/hasil'
@@ -407,6 +467,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/unduhan': {
+      id: '/_app/unduhan'
+      path: '/unduhan'
+      fullPath: '/unduhan'
+      preLoaderRoute: typeof AppUnduhanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/tersimpan': {
+      id: '/_app/tersimpan'
+      path: '/tersimpan'
+      fullPath: '/tersimpan'
+      preLoaderRoute: typeof AppTersimpanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sorotan': {
+      id: '/_app/sorotan'
+      path: '/sorotan'
+      fullPath: '/sorotan'
+      preLoaderRoute: typeof AppSorotanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/sertifikat': {
       id: '/_app/sertifikat'
       path: '/sertifikat'
@@ -421,11 +502,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoadmapRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/riwayat': {
+      id: '/_app/riwayat'
+      path: '/riwayat'
+      fullPath: '/riwayat'
+      preLoaderRoute: typeof AppRiwayatRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/rencana': {
       id: '/_app/rencana'
       path: '/rencana'
       fullPath: '/rencana'
       preLoaderRoute: typeof AppRencanaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/referensi': {
+      id: '/_app/referensi'
+      path: '/referensi'
+      fullPath: '/referensi'
+      preLoaderRoute: typeof AppReferensiRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/progres': {
@@ -588,9 +683,14 @@ interface AppRouteChildren {
   AppPomodoroRoute: typeof AppPomodoroRoute
   AppProfilRoute: typeof AppProfilRoute
   AppProgresRoute: typeof AppProgresRoute
+  AppReferensiRoute: typeof AppReferensiRoute
   AppRencanaRoute: typeof AppRencanaRoute
+  AppRiwayatRoute: typeof AppRiwayatRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
   AppSertifikatRoute: typeof AppSertifikatRoute
+  AppSorotanRoute: typeof AppSorotanRoute
+  AppTersimpanRoute: typeof AppTersimpanRoute
+  AppUnduhanRoute: typeof AppUnduhanRoute
   AppAiChatRoute: typeof AppAiChatRoute
 }
 
@@ -609,9 +709,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppPomodoroRoute: AppPomodoroRoute,
   AppProfilRoute: AppProfilRoute,
   AppProgresRoute: AppProgresRoute,
+  AppReferensiRoute: AppReferensiRoute,
   AppRencanaRoute: AppRencanaRoute,
+  AppRiwayatRoute: AppRiwayatRoute,
   AppRoadmapRoute: AppRoadmapRoute,
   AppSertifikatRoute: AppSertifikatRoute,
+  AppSorotanRoute: AppSorotanRoute,
+  AppTersimpanRoute: AppTersimpanRoute,
+  AppUnduhanRoute: AppUnduhanRoute,
   AppAiChatRoute: AppAiChatRoute,
 }
 
