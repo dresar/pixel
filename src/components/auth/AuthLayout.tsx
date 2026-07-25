@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Sparkles, Sun, Moon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,3 @@ export function AuthLayout({
     </div>
   );
 }
-
-// dummy route registration is not needed — this file is a component only.
-// Prevent TanStack from treating it as a route:
-export const Route = createFileRoute as unknown as never;
