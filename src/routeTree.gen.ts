@@ -16,9 +16,17 @@ import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
 import { Route as DaftarRouteImport } from './routes/daftar'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppSertifikatRouteImport } from './routes/_app.sertifikat'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppProfilRouteImport } from './routes/_app.profil'
+import { Route as AppPeringkatRouteImport } from './routes/_app.peringkat'
+import { Route as AppPengaturanRouteImport } from './routes/_app.pengaturan'
+import { Route as AppPencapaianRouteImport } from './routes/_app.pencapaian'
+import { Route as AppNotifikasiRouteImport } from './routes/_app.notifikasi'
 import { Route as AppKuisRouteImport } from './routes/_app.kuis'
 import { Route as AppKartuRouteImport } from './routes/_app.kartu'
+import { Route as AppGlosariumRouteImport } from './routes/_app.glosarium'
+import { Route as AppCariRouteImport } from './routes/_app.cari'
 import { Route as AppBerandaRouteImport } from './routes/_app.beranda'
 import { Route as AppBelajarRouteImport } from './routes/_app.belajar'
 import { Route as AppKuisHasilRouteImport } from './routes/_app.kuis.hasil'
@@ -59,9 +67,39 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSertifikatRoute = AppSertifikatRouteImport.update({
+  id: '/sertifikat',
+  path: '/sertifikat',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRoadmapRoute = AppRoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfilRoute = AppProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPeringkatRoute = AppPeringkatRouteImport.update({
+  id: '/peringkat',
+  path: '/peringkat',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPengaturanRoute = AppPengaturanRouteImport.update({
+  id: '/pengaturan',
+  path: '/pengaturan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPencapaianRoute = AppPencapaianRouteImport.update({
+  id: '/pencapaian',
+  path: '/pencapaian',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotifikasiRoute = AppNotifikasiRouteImport.update({
+  id: '/notifikasi',
+  path: '/notifikasi',
   getParentRoute: () => AppRoute,
 } as any)
 const AppKuisRoute = AppKuisRouteImport.update({
@@ -72,6 +110,16 @@ const AppKuisRoute = AppKuisRouteImport.update({
 const AppKartuRoute = AppKartuRouteImport.update({
   id: '/kartu',
   path: '/kartu',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGlosariumRoute = AppGlosariumRouteImport.update({
+  id: '/glosarium',
+  path: '/glosarium',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCariRoute = AppCariRouteImport.update({
+  id: '/cari',
+  path: '/cari',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBerandaRoute = AppBerandaRouteImport.update({
@@ -109,9 +157,17 @@ export interface FileRoutesByFullPath {
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/belajar': typeof AppBelajarRouteWithChildren
   '/beranda': typeof AppBerandaRoute
+  '/cari': typeof AppCariRoute
+  '/glosarium': typeof AppGlosariumRoute
   '/kartu': typeof AppKartuRoute
   '/kuis': typeof AppKuisRouteWithChildren
+  '/notifikasi': typeof AppNotifikasiRoute
+  '/pencapaian': typeof AppPencapaianRoute
+  '/pengaturan': typeof AppPengaturanRoute
+  '/peringkat': typeof AppPeringkatRoute
+  '/profil': typeof AppProfilRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/sertifikat': typeof AppSertifikatRoute
   '/ai/chat': typeof AppAiChatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
@@ -125,9 +181,17 @@ export interface FileRoutesByTo {
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/belajar': typeof AppBelajarRouteWithChildren
   '/beranda': typeof AppBerandaRoute
+  '/cari': typeof AppCariRoute
+  '/glosarium': typeof AppGlosariumRoute
   '/kartu': typeof AppKartuRoute
   '/kuis': typeof AppKuisRouteWithChildren
+  '/notifikasi': typeof AppNotifikasiRoute
+  '/pencapaian': typeof AppPencapaianRoute
+  '/pengaturan': typeof AppPengaturanRoute
+  '/peringkat': typeof AppPeringkatRoute
+  '/profil': typeof AppProfilRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/sertifikat': typeof AppSertifikatRoute
   '/ai/chat': typeof AppAiChatRoute
   '/belajar/materi': typeof AppBelajarMateriRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
@@ -143,9 +207,17 @@ export interface FileRoutesById {
   '/verifikasi-email': typeof VerifikasiEmailRoute
   '/_app/belajar': typeof AppBelajarRouteWithChildren
   '/_app/beranda': typeof AppBerandaRoute
+  '/_app/cari': typeof AppCariRoute
+  '/_app/glosarium': typeof AppGlosariumRoute
   '/_app/kartu': typeof AppKartuRoute
   '/_app/kuis': typeof AppKuisRouteWithChildren
+  '/_app/notifikasi': typeof AppNotifikasiRoute
+  '/_app/pencapaian': typeof AppPencapaianRoute
+  '/_app/pengaturan': typeof AppPengaturanRoute
+  '/_app/peringkat': typeof AppPeringkatRoute
+  '/_app/profil': typeof AppProfilRoute
   '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/sertifikat': typeof AppSertifikatRoute
   '/_app/ai/chat': typeof AppAiChatRoute
   '/_app/belajar/materi': typeof AppBelajarMateriRoute
   '/_app/kuis/hasil': typeof AppKuisHasilRoute
@@ -161,9 +233,17 @@ export interface FileRouteTypes {
     | '/verifikasi-email'
     | '/belajar'
     | '/beranda'
+    | '/cari'
+    | '/glosarium'
     | '/kartu'
     | '/kuis'
+    | '/notifikasi'
+    | '/pencapaian'
+    | '/pengaturan'
+    | '/peringkat'
+    | '/profil'
     | '/roadmap'
+    | '/sertifikat'
     | '/ai/chat'
     | '/belajar/materi'
     | '/kuis/hasil'
@@ -177,9 +257,17 @@ export interface FileRouteTypes {
     | '/verifikasi-email'
     | '/belajar'
     | '/beranda'
+    | '/cari'
+    | '/glosarium'
     | '/kartu'
     | '/kuis'
+    | '/notifikasi'
+    | '/pencapaian'
+    | '/pengaturan'
+    | '/peringkat'
+    | '/profil'
     | '/roadmap'
+    | '/sertifikat'
     | '/ai/chat'
     | '/belajar/materi'
     | '/kuis/hasil'
@@ -194,9 +282,17 @@ export interface FileRouteTypes {
     | '/verifikasi-email'
     | '/_app/belajar'
     | '/_app/beranda'
+    | '/_app/cari'
+    | '/_app/glosarium'
     | '/_app/kartu'
     | '/_app/kuis'
+    | '/_app/notifikasi'
+    | '/_app/pencapaian'
+    | '/_app/pengaturan'
+    | '/_app/peringkat'
+    | '/_app/profil'
     | '/_app/roadmap'
+    | '/_app/sertifikat'
     | '/_app/ai/chat'
     | '/_app/belajar/materi'
     | '/_app/kuis/hasil'
@@ -263,11 +359,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/sertifikat': {
+      id: '/_app/sertifikat'
+      path: '/sertifikat'
+      fullPath: '/sertifikat'
+      preLoaderRoute: typeof AppSertifikatRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/roadmap': {
       id: '/_app/roadmap'
       path: '/roadmap'
       fullPath: '/roadmap'
       preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profil': {
+      id: '/_app/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof AppProfilRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/peringkat': {
+      id: '/_app/peringkat'
+      path: '/peringkat'
+      fullPath: '/peringkat'
+      preLoaderRoute: typeof AppPeringkatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pengaturan': {
+      id: '/_app/pengaturan'
+      path: '/pengaturan'
+      fullPath: '/pengaturan'
+      preLoaderRoute: typeof AppPengaturanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pencapaian': {
+      id: '/_app/pencapaian'
+      path: '/pencapaian'
+      fullPath: '/pencapaian'
+      preLoaderRoute: typeof AppPencapaianRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifikasi': {
+      id: '/_app/notifikasi'
+      path: '/notifikasi'
+      fullPath: '/notifikasi'
+      preLoaderRoute: typeof AppNotifikasiRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/kuis': {
@@ -282,6 +420,20 @@ declare module '@tanstack/react-router' {
       path: '/kartu'
       fullPath: '/kartu'
       preLoaderRoute: typeof AppKartuRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/glosarium': {
+      id: '/_app/glosarium'
+      path: '/glosarium'
+      fullPath: '/glosarium'
+      preLoaderRoute: typeof AppGlosariumRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/cari': {
+      id: '/_app/cari'
+      path: '/cari'
+      fullPath: '/cari'
+      preLoaderRoute: typeof AppCariRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/beranda': {
@@ -348,18 +500,34 @@ const AppKuisRouteWithChildren =
 interface AppRouteChildren {
   AppBelajarRoute: typeof AppBelajarRouteWithChildren
   AppBerandaRoute: typeof AppBerandaRoute
+  AppCariRoute: typeof AppCariRoute
+  AppGlosariumRoute: typeof AppGlosariumRoute
   AppKartuRoute: typeof AppKartuRoute
   AppKuisRoute: typeof AppKuisRouteWithChildren
+  AppNotifikasiRoute: typeof AppNotifikasiRoute
+  AppPencapaianRoute: typeof AppPencapaianRoute
+  AppPengaturanRoute: typeof AppPengaturanRoute
+  AppPeringkatRoute: typeof AppPeringkatRoute
+  AppProfilRoute: typeof AppProfilRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
+  AppSertifikatRoute: typeof AppSertifikatRoute
   AppAiChatRoute: typeof AppAiChatRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppBelajarRoute: AppBelajarRouteWithChildren,
   AppBerandaRoute: AppBerandaRoute,
+  AppCariRoute: AppCariRoute,
+  AppGlosariumRoute: AppGlosariumRoute,
   AppKartuRoute: AppKartuRoute,
   AppKuisRoute: AppKuisRouteWithChildren,
+  AppNotifikasiRoute: AppNotifikasiRoute,
+  AppPencapaianRoute: AppPencapaianRoute,
+  AppPengaturanRoute: AppPengaturanRoute,
+  AppPeringkatRoute: AppPeringkatRoute,
+  AppProfilRoute: AppProfilRoute,
   AppRoadmapRoute: AppRoadmapRoute,
+  AppSertifikatRoute: AppSertifikatRoute,
   AppAiChatRoute: AppAiChatRoute,
 }
 
