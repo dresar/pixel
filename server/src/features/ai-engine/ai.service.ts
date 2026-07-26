@@ -1,6 +1,6 @@
 /**
  * AI Engine Service — BrevetAI 2026
- * Menangani logika proses prompt dan rotasi chat AI tanpa error database
+ * Menangani logika proses prompt, rotasi chat AI, dan multi-modal image analysis
  */
 
 import { eq, desc } from "drizzle-orm";
@@ -14,7 +14,8 @@ const SYSTEM_INSTRUCTION = `Kamu adalah Asisten BrevetAI, tutor pajak digital in
 Prinsip jawabanmu:
 1. Menggunakan Bahasa Indonesia yang santai, akrab, tidak kaku, dan mudah dipahami oleh mahasiswa/praktisi.
 2. Mengacu pada regulasi perpajakan Indonesia terbaru: UU HPP No. 7/2021, PMK 168/2023 (TER PPh 21), UU KUP, UU PPN, dan integrasi Coretax DJP (NIK sebagai NPWP).
-3. Berikan penafsiran yang jelas, sertakan contoh perhitungan sederhana jika diminta, dan berikan poin-poin langkah praktis.`;
+3. Berikan penafsiran yang jelas, sertakan contoh perhitungan sederhana jika diminta, dan berikan poin-poin langkah praktis.
+4. Jika pengguna memberikan gambar/dokumen (misal Bukti Potong, Faktur Pajak, Form SPT, atau Soal Kuis), analisis gambar tersebut secara cermat dan berikan penjelasan mendalam.`;
 
 export const aiService = {
   /**
@@ -34,12 +35,14 @@ export const aiService = {
   },
 
   /**
-   * Lanjutkan percakapan chat AI (Multi-turn chat)
+   * Lanjutkan percakapan chat AI (Multi-turn chat & Multi-modal Image)
    */
   async lanjutkanChat(
     conversationId: string | null,
     pesan: string,
-    userId: string
+    userId: string,
+    gambarBase64?: string,
+    mimeType?: string
   ) {
     let convId = conversationId;
 
@@ -120,10 +123,12 @@ export const aiService = {
       }
     }
 
-    // Panggil Gemini Engine (dengan rotasi API key otomatis)
+    // Panggil Gemini Engine (dengan rotasi API key & dukungan gambar)
     const hasil = await panggilGemini({
       systemInstruction: SYSTEM_INSTRUCTION,
       prompt: `${konteksPesan}\n\nAsisten BrevetAI:`,
+      gambarBase64,
+      mimeType,
     });
 
     // Simpan respons AI (opsional jika convId real)
@@ -148,17 +153,39 @@ export const aiService = {
   /**
    * Ambil riwayat percakapan pengguna
    */
-  async ambilRiwayat(userId: string) {
+  async riwayatPercakapan(userId: string) {
     try {
-      const percakapan = await db
+      return await db
         .select()
         .from(aiConversations)
         .where(eq(aiConversations.userId, userId))
         .orderBy(desc(aiConversations.updatedAt));
-
-      return percakapan;
     } catch {
       return [];
+    }
+  },
+
+  /**
+   * Detail percakapan beserta daftar pesan
+   */
+  async detailPercakapan(conversationId: string, userId: string) {
+    try {
+      const [conv] = await db
+        .select()
+        .from(aiConversations)
+        .where(eq(aiConversations.id, conversationId));
+
+      if (!conv) return null;
+
+      const daftarPesan = await db
+        .select()
+        .from(aiMessages)
+        .where(eq(aiMessages.conversationId, conversationId))
+        .orderBy(asc(aiMessages.createdAt));
+
+      return { ...conv, pesan: daftarPesan };
+    } catch {
+      return null;
     }
   },
 };

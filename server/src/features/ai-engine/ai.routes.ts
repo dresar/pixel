@@ -3,8 +3,6 @@
  */
 
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
 import { aiService } from "./ai.service.js";
 import { authMiddleware } from "../../shared/middleware/auth.middleware.js";
 import { sukses, gagal } from "../../shared/utils/response.js";
@@ -45,7 +43,7 @@ aiRoutes.post(
   },
 );
 
-// POST /api/ai/chat — Kirim pesan chat (Kompatibel dengan semua format payload frontend)
+// POST /api/ai/chat — Kirim pesan chat (Kompatibel dengan teks, @mentions, dan gambar Base64)
 aiRoutes.post("/chat", async (c) => {
   try {
     const user = c.get("user");
@@ -57,6 +55,8 @@ aiRoutes.post("/chat", async (c) => {
     const payload = body?.data ? body.data : body;
     const pesan = payload?.pesan || payload?.prompt || "";
     let conversationId = payload?.conversationId;
+    const gambarBase64 = payload?.gambarBase64 || payload?.gambar;
+    const mimeType = payload?.mimeType || "image/jpeg";
 
     if (!pesan || typeof pesan !== "string" || !pesan.trim()) {
       return gagal(c, "Pesan wajib diisi", "BAD_REQUEST", 400);
@@ -68,7 +68,13 @@ aiRoutes.post("/chat", async (c) => {
       conversationId = null;
     }
 
-    const hasil = await aiService.lanjutkanChat(conversationId || null, pesan, user?.id || "anonymous");
+    const hasil = await aiService.lanjutkanChat(
+      conversationId || null,
+      pesan,
+      user?.id || "anonymous",
+      gambarBase64,
+      mimeType
+    );
     return sukses(c, "Pesan berhasil diproses", hasil);
   } catch (error) {
     if (isAppError(error)) return gagal(c, error.message, error.code, error.statusCode);

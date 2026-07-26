@@ -43790,7 +43790,7 @@ var envSchema = external_exports.object({
   CLOUDINARY_API_SECRET: external_exports.string().min(1, "CLOUDINARY_API_SECRET wajib diisi"),
   // Gemini AI
   GEMINI_API_KEY: external_exports.string().optional(),
-  GEMINI_MODEL: external_exports.string().default("gemini-3.1-flash-lite"),
+  GEMINI_MODEL: external_exports.string().default("gemini-2.0-flash"),
   // Security
   API_KEY_ENCRYPTION_SECRET: external_exports.string().min(16).default("brevetai-fallback-secret-key-2026"),
   // Server
@@ -69942,7 +69942,7 @@ function notIlike(column, value) {
 }
 
 // node_modules/drizzle-orm/sql/expressions/select.js
-function asc(column) {
+function asc2(column) {
   return sql2`${column} asc`;
 }
 function desc(column) {
@@ -70031,7 +70031,7 @@ function getOperators() {
 function getOrderByOperators() {
   return {
     sql: sql2,
-    asc,
+    asc: asc2,
     desc
   };
 }
@@ -70562,7 +70562,7 @@ var drizzleAdapter = (db2, config3) => {
       async findMany({ model, where, sortBy, limit, select, offset, join }) {
         const schemaModel = getSchema2(model);
         const clause = where ? convertWhereClause(where, model) : [];
-        const sortFn = sortBy?.direction === "desc" ? desc : asc;
+        const sortFn = sortBy?.direction === "desc" ? desc : asc2;
         if (options.experimental?.joins) {
           const queryModel = getQueryModel(model);
           if (!queryModel) {
@@ -80256,16 +80256,16 @@ var zValidator = (target, schema2, hook) => (
 var modulesRepository = {
   // ── Roadmaps ────────────────────────────────────────────────────────────────
   async ambilRoadmapTerbit() {
-    return db.select().from(roadmaps).where(eq(roadmaps.status, "TERBIT")).orderBy(asc(roadmaps.urutan));
+    return db.select().from(roadmaps).where(eq(roadmaps.status, "TERBIT")).orderBy(asc2(roadmaps.urutan));
   },
   // ── Levels ──────────────────────────────────────────────────────────────────
   async ambilLevelPertama() {
-    const [level] = await db.select().from(levels2).orderBy(asc(levels2.urutan)).limit(1);
+    const [level] = await db.select().from(levels2).orderBy(asc2(levels2.urutan)).limit(1);
     return level ?? null;
   },
   // ── Modules ─────────────────────────────────────────────────────────────────
   async daftarModul(filter) {
-    let query = db.select().from(modules).where(isNull2(modules.deletedAt)).orderBy(asc(modules.urutan)).$dynamic();
+    let query = db.select().from(modules).where(isNull2(modules.deletedAt)).orderBy(asc2(modules.urutan)).$dynamic();
     const conditions = [isNull2(modules.deletedAt)];
     if (filter.levelId) conditions.push(eq(modules.levelId, filter.levelId));
     if (filter.status) conditions.push(eq(modules.statusPublikasi, filter.status));
@@ -80303,11 +80303,11 @@ var modulesRepository = {
   },
   // ── Chapters ────────────────────────────────────────────────────────────────
   async daftarChapterByModul(moduleId) {
-    return db.select().from(chapters).where(eq(chapters.moduleId, moduleId)).orderBy(asc(chapters.urutan));
+    return db.select().from(chapters).where(eq(chapters.moduleId, moduleId)).orderBy(asc2(chapters.urutan));
   },
   async daftarSemuaChapter() {
     try {
-      return await db.select().from(chapters).orderBy(asc(chapters.urutan));
+      return await db.select().from(chapters).orderBy(asc2(chapters.urutan));
     } catch (err) {
       console.warn("Table chapters query fallback:", err);
       return [];
@@ -80327,7 +80327,7 @@ var modulesRepository = {
   // ── Lessons ─────────────────────────────────────────────────────────────────
   async daftarSemuaLesson() {
     try {
-      return await db.select().from(lessons).orderBy(asc(lessons.urutan));
+      return await db.select().from(lessons).orderBy(asc2(lessons.urutan));
     } catch (err) {
       console.warn("Table lessons query fallback:", err);
       return [];
@@ -80346,7 +80346,7 @@ var modulesRepository = {
   },
   async lessonByChapters(chapIds) {
     if (chapIds.length === 0) return [];
-    return db.select().from(lessons).where(inArray(lessons.chapterId, chapIds)).orderBy(asc(lessons.urutan));
+    return db.select().from(lessons).where(inArray(lessons.chapterId, chapIds)).orderBy(asc2(lessons.urutan));
   },
   async simpanLesson(data) {
     const [lesson] = await db.insert(lessons).values({
@@ -81862,10 +81862,10 @@ function dekripsi(text2) {
 async function dapatkanDaftarApiKeyRotasi() {
   const candidates = [];
   try {
-    const dbKeys = await db.select().from(apiKeys).where(eq(apiKeys.status, "AKTIF")).orderBy(asc(apiKeys.prioritas), asc(apiKeys.totalRequest));
+    const dbKeys = await db.select().from(apiKeys).where(eq(apiKeys.status, "AKTIF")).orderBy(asc2(apiKeys.prioritas), asc2(apiKeys.totalRequest));
     for (const k of dbKeys) {
       const dec = dekripsi(k.apiKeyTerenkripsi);
-      if (dec && dec.trim().length > 10) {
+      if (dec && dec.trim().startsWith("AIza")) {
         candidates.push({
           id: k.id,
           nama: k.nama || "Key Database",
@@ -81888,9 +81888,22 @@ async function dapatkanDaftarApiKeyRotasi() {
   return candidates;
 }
 async function panggilGemini(options) {
-  const targetModel = options.model || env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+  const modelRequested = options.model || env.GEMINI_MODEL || process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const targetModel = modelRequested.includes("gemini-3") || !modelRequested.startsWith("gemini") ? "gemini-2.0-flash" : modelRequested;
   const keyList = await dapatkanDaftarApiKeyRotasi();
   logger2.info(`Memulai eksekusi Gemini AI (Model: ${targetModel}, Tersedia ${keyList.length} API Key)`);
+  const contents = [];
+  if (options.gambarBase64) {
+    const base64Data = options.gambarBase64.includes(",") ? options.gambarBase64.split(",")[1] : options.gambarBase64;
+    const mime = options.mimeType || "image/jpeg";
+    contents.push({
+      inlineData: {
+        data: base64Data,
+        mimeType: mime
+      }
+    });
+  }
+  contents.push(options.prompt);
   for (let i = 0; i < keyList.length; i++) {
     const activeKey = keyList[i];
     try {
@@ -81900,7 +81913,7 @@ async function panggilGemini(options) {
         model: targetModel,
         ...options.systemInstruction && { systemInstruction: options.systemInstruction }
       });
-      const result = await geminiModel.generateContent(options.prompt);
+      const result = await geminiModel.generateContent(contents);
       const response = result.response;
       const teks = response.text();
       const usageMetadata = response.usageMetadata;
@@ -81932,48 +81945,17 @@ async function panggilGemini(options) {
     }
   }
   logger2.warn("Seluruh API Key Gemini tidak dapat digunakan. Mengaktifkan Engine Pengetahuan Terstruktur BrevetAI.");
-  const fallbackAnswer = hasilkanFallbackJawaban(options.prompt);
   return {
-    teks: fallbackAnswer
+    teks: `Berdasarkan regulasi UU HPP No. 7/2021 dan PMK 168/2023, berikut analisis perpajakan terkait **"${options.prompt}"**:
+
+1. **Prinsip & Pengaturan Dasar**:
+   - Pemotongan PPh 21 menggunakan mekanisme TER (Tarif Efektif Rata-rata) bulanan (Kategori A, B, C).
+   - Pada bulan Desember, penghitungan PPh 21 disesuaikan dengan Tarif Progresif Pasal 17 ayat (1) huruf a UU PPh dikurangi akumulasi pemotongan TER Januari-November.
+
+2. **Langkah Praktis Wajib Pajak**:
+   - Pastikan NIK sudah terintegrasi 100% sebagai NPWP 16 digit pada sistem Coretax DJP.
+   - Siapkan bukti potong 1721-A1/A2 sebelum batas waktu pelaporan SPT Tahunan WPOP (31 Maret).`
   };
-}
-function hasilkanFallbackJawaban(prompt) {
-  const p2 = prompt.toLowerCase();
-  if (p2.includes("pasal 17") || p2.includes("progresif") || p2.includes("tarif")) {
-    return `Berdasarkan UU HPP No. 7/2021, tarif PPh Pasal 17 Orang Pribadi terbagi menjadi 5 lapisan progresif:
-
-1. PKP s.d Rp 60 Juta: **5%**
-2. PKP > Rp 60 Juta - Rp 250 Juta: **15%**
-3. PKP > Rp 250 Juta - Rp 500 Juta: **25%**
-4. PKP > Rp 500 Juta - Rp 5 Miliar: **30%**
-5. PKP > Rp 5 Miliar: **35%**
-
-Sistem ini membuat pemotongan pajak lebih adil. Semakin tinggi penghasilan kena pajakmu, persentase yang dikenakan pada lapisan atasnya akan meningkat secara berlapis.`;
-  }
-  if (p2.includes("ter") || p2.includes("pmk 168") || p2.includes("21")) {
-    return `Berdasarkan PMK 168/2023 yang berlaku mulai 1 Januari 2024, pemotongan PPh 21 menggunakan skema **Tarif Efektif Rata-rata (TER)**:
-
-\u2022 **TER Bulanan**: Terbagi menjadi Kategori A, B, dan C (tergantung status PTKP karyawan).
-\u2022 **Masa Desember**: Dihitung kembali menggunakan tarif progresif Pasal 17 UU PPh dikurangi total TER yang sudah dipotong Januari-November.
-
-Dengan skema TER ini, perhitungan PPh 21 bulanan karyawan jauh lebih praktis dan tidak membingungkan!`;
-  }
-  if (p2.includes("coretax") || p2.includes("nik") || p2.includes("npwp")) {
-    return `Mulai 2026, sistem Coretax DJP mengintegrasikan **NIK sebagai NPWP** secara penuh bagi Wajib Pajak Orang Pribadi.
-
-Semua layanan perpajakan, mulai dari pembuatan bukti potong hingga pelaporan SPT Tahunan, dapat dilakukan secara terpadu melalui portal Coretax DJP dengan autentikasi NIK 16 digit.`;
-  }
-  if (p2.includes("definisi") || p2.includes("apa itu pajak") || p2.includes("ciri")) {
-    return `Berdasarkan UU KUP No. 28/2007, **Pajak** adalah kontribusi wajib kepada negara yang bersifat memaksa tanpa imbalan langsung.
-
-Ciri utama pajak:
-1. **Wajib & Memaksa** berdasarkan UU.
-2. **Non-kontraprestasi**: Kamu tidak mendapat imbalan langsung saat itu juga.
-3. **Guna Publik**: Dana dialokasikan untuk pembangunan jalan, sekolah, rumah sakit, dan fasilitas negara.`;
-  }
-  return `Tentu! Berdasarkan ketentuan perpajakan Indonesia terbaru (UU HPP No. 7/2021 dan PMK 168/2023):
-
-Setiap transaksi perpajakan selalu mengacu pada prinsip kepastian hukum, keadilan, dan kemudahan administrasi. Jika kamu ingin menghitung contoh kasus tertentu atau mengecek dasar hukumnya, silakan sebutkan angka atau topik yang ingin kamu simulasikan bersama!`;
 }
 
 // src/features/ai-engine/ai.service.ts
@@ -81981,7 +81963,8 @@ var SYSTEM_INSTRUCTION = `Kamu adalah Asisten BrevetAI, tutor pajak digital inte
 Prinsip jawabanmu:
 1. Menggunakan Bahasa Indonesia yang santai, akrab, tidak kaku, dan mudah dipahami oleh mahasiswa/praktisi.
 2. Mengacu pada regulasi perpajakan Indonesia terbaru: UU HPP No. 7/2021, PMK 168/2023 (TER PPh 21), UU KUP, UU PPN, dan integrasi Coretax DJP (NIK sebagai NPWP).
-3. Berikan penafsiran yang jelas, sertakan contoh perhitungan sederhana jika diminta, dan berikan poin-poin langkah praktis.`;
+3. Berikan penafsiran yang jelas, sertakan contoh perhitungan sederhana jika diminta, dan berikan poin-poin langkah praktis.
+4. Jika pengguna memberikan gambar/dokumen (misal Bukti Potong, Faktur Pajak, Form SPT, atau Soal Kuis), analisis gambar tersebut secara cermat dan berikan penjelasan mendalam.`;
 var aiService = {
   /**
    * Proses permintaan tunggal (Prompt Studio / Fitur AI sekali panggil)
@@ -81994,9 +81977,9 @@ var aiService = {
     return { teks: hasil.teks, tipe };
   },
   /**
-   * Lanjutkan percakapan chat AI (Multi-turn chat)
+   * Lanjutkan percakapan chat AI (Multi-turn chat & Multi-modal Image)
    */
-  async lanjutkanChat(conversationId, pesan, userId) {
+  async lanjutkanChat(conversationId, pesan, userId, gambarBase64, mimeType) {
     let convId = conversationId;
     let targetUserId = userId;
     try {
@@ -82051,7 +82034,9 @@ var aiService = {
       systemInstruction: SYSTEM_INSTRUCTION,
       prompt: `${konteksPesan}
 
-Asisten BrevetAI:`
+Asisten BrevetAI:`,
+      gambarBase64,
+      mimeType
     });
     if (convId && !convId.startsWith("temp_")) {
       try {
@@ -82071,12 +82056,24 @@ Asisten BrevetAI:`
   /**
    * Ambil riwayat percakapan pengguna
    */
-  async ambilRiwayat(userId) {
+  async riwayatPercakapan(userId) {
     try {
-      const percakapan = await db.select().from(aiConversations).where(eq(aiConversations.userId, userId)).orderBy(desc(aiConversations.updatedAt));
-      return percakapan;
+      return await db.select().from(aiConversations).where(eq(aiConversations.userId, userId)).orderBy(desc(aiConversations.updatedAt));
     } catch {
       return [];
+    }
+  },
+  /**
+   * Detail percakapan beserta daftar pesan
+   */
+  async detailPercakapan(conversationId, userId) {
+    try {
+      const [conv] = await db.select().from(aiConversations).where(eq(aiConversations.id, conversationId));
+      if (!conv) return null;
+      const daftarPesan = await db.select().from(aiMessages).where(eq(aiMessages.conversationId, conversationId)).orderBy(asc(aiMessages.createdAt));
+      return { ...conv, pesan: daftarPesan };
+    } catch {
+      return null;
     }
   }
 };
@@ -82120,6 +82117,8 @@ aiRoutes.post("/chat", async (c) => {
     const payload = body?.data ? body.data : body;
     const pesan = payload?.pesan || payload?.prompt || "";
     let conversationId = payload?.conversationId;
+    const gambarBase64 = payload?.gambarBase64 || payload?.gambar;
+    const mimeType = payload?.mimeType || "image/jpeg";
     if (!pesan || typeof pesan !== "string" || !pesan.trim()) {
       return gagal(c, "Pesan wajib diisi", "BAD_REQUEST", 400);
     }
@@ -82127,7 +82126,13 @@ aiRoutes.post("/chat", async (c) => {
     if (conversationId && (typeof conversationId !== "string" || !uuidRegex2.test(conversationId))) {
       conversationId = null;
     }
-    const hasil = await aiService.lanjutkanChat(conversationId || null, pesan, user?.id || "anonymous");
+    const hasil = await aiService.lanjutkanChat(
+      conversationId || null,
+      pesan,
+      user?.id || "anonymous",
+      gambarBase64,
+      mimeType
+    );
     return sukses(c, "Pesan berhasil diproses", hasil);
   } catch (error3) {
     if (isAppError(error3)) return gagal(c, error3.message, error3.code, error3.statusCode);
@@ -82398,7 +82403,7 @@ glossaryRoutes.get(
   async (c) => {
     try {
       const { cari } = c.req.valid("query");
-      let query = db.select().from(glossaryEntries).orderBy(asc(glossaryEntries.istilah)).$dynamic();
+      let query = db.select().from(glossaryEntries).orderBy(asc2(glossaryEntries.istilah)).$dynamic();
       if (cari) {
         query = query.where(
           or2(
@@ -82531,7 +82536,7 @@ referensiRoutes.get(
   async (c) => {
     try {
       const { cari } = c.req.valid("query");
-      let query = db.select().from(referensiHukum).orderBy(asc(referensiHukum.nomorPeraturan)).$dynamic();
+      let query = db.select().from(referensiHukum).orderBy(asc2(referensiHukum.nomorPeraturan)).$dynamic();
       if (cari) {
         query = query.where(
           or2(
@@ -82694,10 +82699,10 @@ quizRoutes.get("/:slug", async (c) => {
       if (!anyQuiz) return gagal(c, "Tidak ada kuis tersedia.", "NOT_FOUND", 404);
       quiz = anyQuiz;
     }
-    const questionsList = await db.select().from(quizQuestions).where(eq(quizQuestions.quizId, quiz.id)).orderBy(asc(quizQuestions.urutan));
+    const questionsList = await db.select().from(quizQuestions).where(eq(quizQuestions.quizId, quiz.id)).orderBy(asc2(quizQuestions.urutan));
     const questionsWithOptions = await Promise.all(
       questionsList.map(async (q) => {
-        const opts = await db.select().from(quizOptions).where(eq(quizOptions.questionId, q.id)).orderBy(asc(quizOptions.urutan));
+        const opts = await db.select().from(quizOptions).where(eq(quizOptions.questionId, q.id)).orderBy(asc2(quizOptions.urutan));
         return {
           id: q.id,
           quizId: q.quizId,
@@ -83215,7 +83220,7 @@ apiKeysRoutes.post("/tes-semua", async (c) => {
 var promptStudioRoutes = new Hono2();
 promptStudioRoutes.get("/", async (c) => {
   try {
-    const list = await db.select().from(promptEngines).orderBy(asc(promptEngines.urutanKompilasi));
+    const list = await db.select().from(promptEngines).orderBy(asc2(promptEngines.urutanKompilasi));
     return sukses(c, "Daftar Prompt Engine dimuat", list);
   } catch (error3) {
     return sukses(c, "Daftar Prompt Engine dimuat", []);

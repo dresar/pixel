@@ -15,11 +15,15 @@ export async function prosesPermintaanAi(data: {
 export async function kirimPesanChat(data: {
   pesan: string;
   conversationId?: string | null;
-} | { data: { pesan: string; conversationId?: string | null } }) {
+  gambarBase64?: string;
+  mimeType?: string;
+} | { data: { pesan: string; conversationId?: string | null; gambarBase64?: string; mimeType?: string } }) {
   const payload = "data" in data && data.data ? data.data : data;
   return api.post("/api/ai/chat", {
     pesan: payload.pesan,
     conversationId: payload.conversationId || null,
+    gambarBase64: payload.gambarBase64,
+    mimeType: payload.mimeType,
   });
 }
 

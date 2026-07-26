@@ -23,7 +23,7 @@ const envSchema = z.object({
 
   // Gemini AI
   GEMINI_API_KEY: z.string().optional(),
-  GEMINI_MODEL: z.string().default("gemini-3.1-flash-lite"),
+  GEMINI_MODEL: z.string().default("gemini-2.0-flash"),
 
   // Security
   API_KEY_ENCRYPTION_SECRET: z.string().min(16).default("brevetai-fallback-secret-key-2026"),
