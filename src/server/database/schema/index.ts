@@ -11,3 +11,4 @@ export * from "./glossary.schema";
 export * from "./personal.schema";
 export * from "./notifications.schema";
 export * from "./audit.schema";
+export * from "./referensi.schema";

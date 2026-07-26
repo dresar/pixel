@@ -150,6 +150,7 @@ function EditMateriDetailPage() {
         data: {
           id: currentLesson.id,
           judul: editJudul,
+          statusPublikasi: "TERBIT",
           kontenJson: finalJson,
         },
       });

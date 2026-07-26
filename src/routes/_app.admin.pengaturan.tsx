@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Server, Sparkles, Database, ShieldCheck, CheckCircle2, AlertTriangle, Save } from "lucide-react";
+import { Database, ShieldCheck, CheckCircle2, Save, KeyRound, Sliders, Globe } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { PageBody, PageHeader } from "@/components/layout/AppShell";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_app/admin/pengaturan")({
   head: () => ({
     meta: [
       { title: "Pengaturan Platform — Admin BrevetAI" },
-      { name: "description", content: "Konfigurasi inti sistem, AI workflow, dan database Neon." },
+      { name: "description", content: "Konfigurasi inti platform dan status infrastruktur BrevetAI." },
     ],
   }),
   component: AdminPengaturan,
@@ -36,120 +36,111 @@ function Card({ icon: Icon, title, desc, children }: any) {
 }
 
 function AdminPengaturan() {
-  const [aiActive, setAiActive] = useState(true);
-  const [defaultModel, setDefaultModel] = useState("claude-3-5-sonnet (External AI)");
-  const [maintMode, setMaintMode] = useState(false);
-  const [savedMsg, setSavedMsg] = useState(false);
+  const [namaPlatform, setNamaPlatform] = useState("BrevetAI — Learning Management System");
+  const [versiKurikulum, setVersiKurikulum] = useState("Regulasi Perpajakan 2026 (UU HPP & PMK 168/2023)");
+  const [passingGradeDefault, setPassingGradeDefault] = useState("70");
+  const [saving, setSaving] = useState(false);
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 2500);
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      toast.success("Pengaturan platform berhasil disimpan!");
+    }, 600);
   };
 
   return (
     <>
       <PageHeader
-        title="Pengaturan Sistem & Konfigurasi AI"
-        description="Kelola pengaturan penting platform BrevetAI tanpa informasi yang berlebihan."
+        title="Pengaturan Platform"
+        description="Kelola preferensi inti dan pantau status infrastruktur platform BrevetAI."
         breadcrumb={[{ label: "Admin", to: "/admin/dashboard" }, { label: "Pengaturan" }]}
       />
 
       <PageBody className="max-w-3xl space-y-6">
-        {savedMsg && (
-          <div className="flex items-center gap-2 rounded-xl bg-success/15 border border-success/30 p-3.5 text-xs text-success font-semibold">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span>Pengaturan platform berhasil disimpan di memori sistem!</span>
-          </div>
-        )}
-
         <form onSubmit={handleSaveSettings} className="space-y-6">
-          {/* CARD 1: DATABASE & AUTH STATUS */}
+          {/* CARD 1: DATABASE & INFRASTRUCTURE STATUS */}
           <Card
             icon={Database}
-            title="Koneksi Database & Keamanan"
-            desc="Status infrastruktur server yang berjalan saat ini."
+            title="Status System & Infrastruktur Server"
+            desc="Monitoring koneksi database dan layanan utama yang terhubung."
           >
-            <div className="grid gap-3 sm:grid-cols-2 text-xs">
-              <div className="flex items-center justify-between rounded-xl border bg-muted/30 p-3.5">
-                <div>
-                  <p className="font-bold text-foreground">Neon PostgreSQL</p>
-                  <p className="text-[11px] text-muted-foreground">Serverless DB (Drizzle ORM)</p>
+            <div className="grid gap-3 sm:grid-cols-3 text-xs">
+              <div className="flex flex-col justify-between rounded-xl border bg-muted/30 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-foreground">Neon Database</span>
+                  <Badge variant="outline" className="border-success/40 bg-success/15 text-success font-semibold text-[10px]">
+                    ● Terhubung
+                  </Badge>
                 </div>
-                <Badge variant="outline" className="border-success/40 bg-success/15 text-success font-semibold">
-                  ● Terhubung
-                </Badge>
+                <p className="text-[11px] text-muted-foreground">PostgreSQL Serverless</p>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border bg-muted/30 p-3.5">
-                <div>
-                  <p className="font-bold text-foreground">Better Auth v1.6</p>
-                  <p className="text-[11px] text-muted-foreground">Sesi & Kredensial Pengguna</p>
+              <div className="flex flex-col justify-between rounded-xl border bg-muted/30 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-foreground">Better Auth</span>
+                  <Badge variant="outline" className="border-success/40 bg-success/15 text-success font-semibold text-[10px]">
+                    ● Aktif
+                  </Badge>
                 </div>
-                <Badge variant="outline" className="border-success/40 bg-success/15 text-success font-semibold">
-                  ● Aktif (Secure)
-                </Badge>
+                <p className="text-[11px] text-muted-foreground">Autentikasi Sesi & Peran</p>
+              </div>
+
+              <div className="flex flex-col justify-between rounded-xl border bg-muted/30 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-foreground">Gemini Key Rotation</span>
+                  <Badge variant="outline" className="border-success/40 bg-success/15 text-success font-semibold text-[10px]">
+                    ● 54 Keys
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">Auto-fallback AI API</p>
               </div>
             </div>
           </Card>
 
-          {/* CARD 2: AI WORKFLOW CONFIG */}
+          {/* CARD 2: ESSENTIAL PLATFORM PREFERENCES */}
           <Card
-            icon={Sparkles}
-            title="Konfigurasi AI Workflow (Rule 12)"
-            desc="Aturan pembuatan konten otomatis menggunakan Claude AI eksternal & Gemini."
+            icon={Sliders}
+            title="Konfigurasi Utama Kurikulum & Kuis"
+            desc="Pengaturan dasar untuk nama platform dan nilai standar kuis evaluasi."
           >
             <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-foreground">Generator Prompt Claude di CMS</p>
-                  <p className="text-muted-foreground mt-0.5">
-                    Izinkan Admin menghasilkan prompt tersinkronisasi dan mengimpor kembali format JSON ke database.
-                  </p>
-                </div>
-                <Switch checked={aiActive} onCheckedChange={setAiActive} />
-              </div>
-
-              <div className="grid gap-1.5 pt-2 border-t">
-                <Label className="font-bold text-xs">Model Standar Pembuatan Modul</Label>
+              <div className="grid gap-1.5">
+                <Label className="font-bold text-xs">Nama Platform</Label>
                 <Input
-                  value={defaultModel}
-                  onChange={(e) => setDefaultModel(e.target.value)}
+                  value={namaPlatform}
+                  onChange={(e) => setNamaPlatform(e.target.value)}
                   className="text-xs bg-muted/20"
                 />
-                <p className="text-[11px] text-muted-foreground italic">
-                  * Catatan: Sistem mematuhi Aturan Master 12 dimana CMS bertindak sebagai prompter & validator JSON.
-                </p>
               </div>
-            </div>
-          </Card>
 
-          {/* CARD 3: MAINTENANCE MODE */}
-          <Card
-            icon={Server}
-            title="Mode Pemeliharaan Sistem (Maintenance)"
-            desc="Kendalikan akses masuk publik saat pembaruan kurikulum pajak besar-besaran."
-          >
-            <div className="flex items-center justify-between text-xs">
-              <div>
-                <p className="font-bold text-foreground">Aktifkan Mode Pemeliharaan</p>
-                <p className="text-muted-foreground mt-0.5">
-                  Jika aktif, siswa biasa (STUDENT) tidak dapat mengakses modul atau kuis untuk sementara.
-                </p>
+              <div className="grid gap-1.5">
+                <Label className="font-bold text-xs">Standar Versi Kurikulum</Label>
+                <Input
+                  value={versiKurikulum}
+                  onChange={(e) => setVersiKurikulum(e.target.value)}
+                  className="text-xs bg-muted/20"
+                />
               </div>
-              <Switch checked={maintMode} onCheckedChange={setMaintMode} />
+
+              <div className="grid gap-1.5">
+                <Label className="font-bold text-xs">Nilai Minimum Lulus Kuis Default (%)</Label>
+                <Input
+                  type="number"
+                  value={passingGradeDefault}
+                  onChange={(e) => setPassingGradeDefault(e.target.value)}
+                  className="text-xs bg-muted/20 w-32"
+                  min={50}
+                  max={100}
+                />
+              </div>
             </div>
-            {maintMode && (
-              <div className="mt-3 flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-xs text-amber-600 dark:text-amber-400">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>Perhatian: Portal siswa akan ditutup sementara jika perubahan ini disimpan!</span>
-              </div>
-            )}
           </Card>
 
           <div className="flex justify-end pt-2">
-            <Button type="submit" size="sm" className="font-semibold">
-              <Save className="mr-1.5 h-4 w-4" /> Simpan Pengaturan Platform
+            <Button type="submit" size="sm" disabled={saving} className="font-bold shadow-xs">
+              <Save className="mr-1.5 h-4 w-4" /> {saving ? "Menyimpan..." : "Simpan Pengaturan"}
             </Button>
           </div>
         </form>

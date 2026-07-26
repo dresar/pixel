@@ -19,6 +19,7 @@ export const PesanChatSchema = z.object({
   pesan: z.string().min(1).max(5000),
   conversationId: z.string().uuid().optional(),
   lessonId: z.string().uuid().optional(),
+  modulId: z.string().optional(),
 });
 
 export type PermintaanAiInput = z.infer<typeof PermintaanAiSchema>;

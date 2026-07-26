@@ -2,12 +2,16 @@ import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-r
 import {
   Bookmark,
   Highlighter,
-  StickyNote,
   Sparkles,
   ArrowLeft,
-  Info,
   ChevronRight,
   CheckCircle2,
+  Scale,
+  Calculator,
+  BookOpen,
+  Clock,
+  Layers,
+  Award,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { PageBody } from "@/components/layout/AppShell";
@@ -44,7 +48,6 @@ function LessonReaderSlug() {
   const [bookmarkSaved, setBookmarkSaved] = useState(false);
   const [progressVal, setProgressVal] = useState(35);
 
-  // Selection state for desktop & mobile (Android)
   const [selectedText, setSelectedText] = useState("");
   const [toolbarPos, setToolbarPos] = useState<{ top: number; left: number } | null>(null);
   const [highlights, setHighlights] = useState<string[]>([]);
@@ -56,7 +59,6 @@ function LessonReaderSlug() {
     }
   }, [slug]);
 
-  // Handle text selection on mouseup / touchend / selectionchange
   useEffect(() => {
     const handleSelectionChange = () => {
       const selection = window.getSelection();
@@ -80,7 +82,7 @@ function LessonReaderSlug() {
             });
           }
         } catch {
-          // fallback
+          // ignore
         }
       }
     };
@@ -114,219 +116,223 @@ function LessonReaderSlug() {
     if (progressVal < 100) {
       setProgressVal(100);
       localStorage.setItem(`mod_prog_${slug}`, "100");
-    } else {
-      navigate({ to: `/belajar/materi/$slug/quiz`, params: { slug } });
     }
+    const quizSlug = `kuis-${lesson?.id || slug}`;
+    navigate({ to: "/kuis/$slug", params: { slug: quizSlug } });
   };
 
+  const blocks = Array.isArray(lesson?.kontenJson) ? lesson.kontenJson : [];
+
   return (
-    <div className="relative">
-      {/* Floating Selection Toolbar for Mouse & Mobile Touch */}
+    <div className="relative bg-background min-h-dvh">
+      {/* Floating Selection Toolbar */}
       {toolbarPos && selectedText && (
         <div
           style={{ top: `${toolbarPos.top}px`, left: `${toolbarPos.left}px` }}
-          className="fixed z-50 flex items-center gap-1 rounded-xl border bg-popover/95 p-1.5 shadow-lg backdrop-blur-md animate-in fade-in zoom-in-95"
+          className="absolute z-50 flex items-center gap-1.5 rounded-xl border border-border bg-popover p-1.5 shadow-md animate-in fade-in zoom-in-95"
         >
-          <Button size="sm" variant="ghost" onClick={handleSorotTeks} className="h-7 text-[11px] px-2">
-            <Highlighter className="mr-1 h-3.5 w-3.5 text-warning" /> Sorot
+          <Button size="sm" variant="ghost" onClick={handleSorotTeks} className="h-7 text-[11px] px-2 font-bold">
+            <Highlighter className="mr-1 h-3.5 w-3.5 text-amber-400" /> Sorot
           </Button>
           <div className="h-3.5 w-px bg-border" />
-          <Button size="sm" onClick={handleTanyaAI} className="h-7 text-[11px] px-2 bg-primary text-primary-foreground">
+          <Button size="sm" onClick={handleTanyaAI} className="h-7 text-[11px] px-2 bg-primary text-primary-foreground font-bold">
             <Sparkles className="mr-1 h-3.5 w-3.5" /> Tanya AI
           </Button>
         </div>
       )}
 
-      {/* Reader Top Bar */}
-      <div className="sticky top-14 z-10 border-b bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5 sm:px-6">
-          <Button asChild variant="ghost" size="icon" aria-label="Kembali ke Modul">
+      {/* Reader Header Bar (Full Width Responsive) */}
+      <div className="sticky top-14 z-10 border-b border-border bg-card/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-8 lg:px-12">
+          <Button asChild variant="ghost" size="icon" aria-label="Kembali ke Katalog">
             <Link to="/belajar">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs text-muted-foreground">
-              {(lesson as any)?.modul?.judul || "Modul PPh Orang Pribadi"} · Bab Tarif & Perhitungan
+            <p className="truncate text-xs sm:text-sm font-bold text-foreground">
+              {(lesson as any)?.modul?.judul || "Materi Pembelajaran Brevet Pajak"}
             </p>
-            <Progress value={progressVal} className="mt-1 h-1" />
+            <Progress value={progressVal} className="mt-1.5 h-1.5 rounded-full" />
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setBookmarkSaved(!bookmarkSaved)}
-            className="text-xs"
+            className="text-xs font-bold rounded-xl shrink-0"
           >
-            <Bookmark className={`mr-1 h-3.5 w-3.5 ${bookmarkSaved ? "fill-primary text-primary" : ""}`} />
-            {bookmarkSaved ? "Tersimpan" : "Simpan"}
+            <Bookmark className={`mr-1.5 h-4 w-4 ${bookmarkSaved ? "fill-primary text-primary" : ""}`} />
+            {bookmarkSaved ? "Tersimpan" : "Simpan Materi"}
           </Button>
         </div>
       </div>
 
-      <PageBody className="max-w-5xl py-6">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px]">
-          {/* Article Reading View */}
-          <article ref={articleRef} className="min-w-0 select-text">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">{(lesson as any)?.modul?.judul || "PPh Orang Pribadi"}</Badge>
-              <Badge variant="secondary">Dasar / Menengah</Badge>
-              <span className="text-xs text-muted-foreground">Estimasi baca: {lesson?.estimasiMenit || 15} menit</span>
+      <PageBody className="max-w-7xl py-8 px-4 sm:px-8 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
+          {/* Main Reading Article Body (Full Wide Desktop) */}
+          <article ref={articleRef} className="min-w-0 select-text space-y-8">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Badge variant="outline" className="rounded-full text-xs font-mono font-bold border-primary/40 text-primary bg-primary/10 px-3 py-1">
+                📘 {(lesson as any)?.modul?.judul || "Brevet Pajak"}
+              </Badge>
+              <Badge variant="secondary" className="rounded-full text-xs font-bold px-3 py-1">
+                {lesson?.statusPublikasi || "TERBIT"}
+              </Badge>
+              <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 text-primary" /> Estimasi baca: {lesson?.estimasiMenit || 15} menit
+              </span>
             </div>
 
-            <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-              {lesson?.judul || "Tarif PPh Pasal 17 untuk Wajib Pajak Orang Pribadi"}
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground leading-tight">
+              {lesson?.judul || "Materi Pembelajaran Perpajakan"}
             </h1>
 
-            <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Pasal 17 Undang-Undang Pajak Penghasilan (UU PPh) sebagaimana telah diubah dengan UU Harmonisasi Peraturan Perpajakan (UU HPP) mengatur tentang lapisan tarif progresif atas Penghasilan Kena Pajak (PKP) Wajib Pajak Orang Pribadi Dalam Negeri.
-            </p>
+            {/* Attached Lesson Illustration Image (Visual Media) */}
+            {lesson?.gambarUrl && (
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <div className="relative aspect-16/9 w-full bg-muted overflow-hidden">
+                  <img
+                    src={lesson.gambarUrl}
+                    alt={lesson.judul}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="p-3 text-center text-xs font-mono text-muted-foreground bg-muted/20 border-t border-border flex items-center justify-center gap-1.5">
+                  <span>📷 Infografis / Ilustrasi Edukasi Visual Perpajakan</span>
+                </div>
+              </div>
+            )}
 
-            {/* Action Bar */}
-            <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl border bg-card p-2 shadow-xs">
-              <Button size="sm" variant="ghost" onClick={handleSorotTeks} className="text-xs">
-                <Highlighter className="mr-1.5 h-3.5 w-3.5" /> Sorot Teks (Seleksi Teks)
+            {/* Interactive Action Bar */}
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xs">
+              <Button size="sm" variant="ghost" onClick={handleSorotTeks} className="text-xs font-bold rounded-xl">
+                <Highlighter className="mr-1.5 h-4 w-4 text-amber-400" /> Sorot Teks Pilihan
               </Button>
-              <Button size="sm" variant="ghost" className="text-xs">
-                <StickyNote className="mr-1.5 h-3.5 w-3.5" /> Tambah Catatan
-              </Button>
-              <Button size="sm" variant="ghost" onClick={handleTanyaAI} className="text-xs text-primary">
-                <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Minta AI Jelaskan
+              <Button size="sm" variant="ghost" onClick={handleTanyaAI} className="text-xs font-bold text-primary rounded-xl">
+                <Sparkles className="mr-1.5 h-4 w-4" /> Minta AI Jelaskan Istilah
               </Button>
             </div>
 
-            {/* Highlights List Banner */}
+            {/* Highlights Banner */}
             {highlights.length > 0 && (
-              <div className="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs space-y-1">
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs space-y-1.5 shadow-2xs">
                 <p className="font-bold text-foreground flex items-center gap-1.5">
-                  <Highlighter className="h-3.5 w-3.5 text-warning" /> Teks Tersorot ({highlights.length}):
+                  <Highlighter className="h-4 w-4 text-amber-400" /> Teks Tersorot ({highlights.length}):
                 </p>
                 {highlights.map((h, i) => (
-                  <p key={i} className="text-muted-foreground italic font-serif">"{h}"</p>
+                  <p key={i} className="text-muted-foreground italic font-serif leading-relaxed">"{h}"</p>
                 ))}
               </div>
             )}
 
-            {/* Detailed Educational Reading Section */}
-            <section id="pengantar" className="mt-8 space-y-6 text-sm leading-relaxed text-foreground/90">
-              <h2 className="text-lg font-bold text-foreground">1. Pengantar Lapisan Tarif Progresif</h2>
-              <p>
-                Sistem perpajakan di Indonesia menganut asas keadilan (*ability to pay*), di mana Wajib Pajak yang memiliki penghasilan lebih tinggi dikenakan lapisan tarif pajak yang lebih tinggi secara berjenjang.
-              </p>
-
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-                <div className="flex gap-3">
-                  <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                  <div className="text-xs sm:text-sm">
-                    <p className="font-bold text-foreground">Catatan Penting UU HPP No. 7 Tahun 2021</p>
-                    <p className="text-muted-foreground mt-0.5">
-                      Batas lapisan pertama Penghasilan Kena Pajak (PKP) dinaikkan dari semula Rp 50 juta menjadi Rp 60 juta (tarif 5%), dan ditambahkan lapisan tarif baru sebesar 35% untuk PKP di atas Rp 5 Miliar per tahun.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <h2 id="tabel-tarif" className="text-lg font-bold text-foreground">2. Tabel Lapisan Tarif PPh Pasal 17 ayat (1) huruf a</h2>
-              <div className="overflow-hidden rounded-xl border bg-card">
-                <table className="w-full text-xs sm:text-sm">
-                  <thead className="bg-muted/60 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b">
-                    <tr>
-                      <th className="px-4 py-3 text-left">Lapisan Penghasilan Kena Pajak (PKP)</th>
-                      <th className="px-4 py-3 text-right">Tarif Pajak</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    <tr className="hover:bg-accent/30">
-                      <td className="px-4 py-3">Sampai dengan Rp 60.000.000</td>
-                      <td className="px-4 py-3 text-right font-bold text-primary">5%</td>
-                    </tr>
-                    <tr className="hover:bg-accent/30">
-                      <td className="px-4 py-3">Di atas Rp 60.000.000 s.d. Rp 250.000.000</td>
-                      <td className="px-4 py-3 text-right font-bold text-primary">15%</td>
-                    </tr>
-                    <tr className="hover:bg-accent/30">
-                      <td className="px-4 py-3">Di atas Rp 250.000.000 s.d. Rp 500.000.000</td>
-                      <td className="px-4 py-3 text-right font-bold text-primary">25%</td>
-                    </tr>
-                    <tr className="hover:bg-accent/30">
-                      <td className="px-4 py-3">Di atas Rp 500.000.000 s.d. Rp 5.000.000.000</td>
-                      <td className="px-4 py-3 text-right font-bold text-primary">30%</td>
-                    </tr>
-                    <tr className="hover:bg-accent/30">
-                      <td className="px-4 py-3">Di atas Rp 5.000.000.000 (Rp 5 Miliar)</td>
-                      <td className="px-4 py-3 text-right font-bold text-primary">35%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h2 id="contoh-kasus" className="text-lg font-bold text-foreground">3. Contoh Studi Kasus Perhitungan</h2>
-              <div className="rounded-xl border bg-card p-5 space-y-3">
-                <p className="font-semibold text-foreground">Studi Kasus:</p>
-                <p className="text-muted-foreground">
-                  Pak Budi memiliki Penghasilan Kena Pajak (PKP) setahun sebesar <strong>Rp 100.000.000</strong>. Berapakah PPh terutang Pak Budi dalam satu tahun pajak?
-                </p>
-                <div className="rounded-lg bg-muted/40 p-4 font-mono text-xs space-y-2 border">
-                  <p>• Lapisan 1 (5% × Rp 60.000.000) = Rp 3.000.000</p>
-                  <p>• Lapisan 2 (15% × Rp 40.000.000) = Rp 6.000.000</p>
-                  <div className="border-t pt-2 font-bold text-primary">
-                    Total PPh Terutang = Rp 3.000.000 + Rp 6.000.000 = Rp 9.000.000 / tahun
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Navigation / Lanjutkan Belajar */}
-              <div className="mt-10 rounded-2xl border bg-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-base">
-                    {progressVal === 100 ? "Modul Selesai! Uji Pemahaman" : "Selesaikan Bab Ini"}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {progressVal === 100
-                      ? "Selamat! Anda telah membaca seluruh materi. Lanjut kerjakan kuis evaluasi."
-                      : "Klik tombol di samping untuk menandai bab ini selesai."}
-                  </p>
-                </div>
-                <Button onClick={handleLanjutBelajar} className="shrink-0">
-                  {progressVal === 100 ? (
-                    <>
-                      Uji Pemahaman via Kuis <ChevronRight className="ml-1 h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
-                      Lanjutkan Belajar <CheckCircle2 className="ml-1.5 h-4 w-4" />
-                    </>
+            {/* Dynamic Content Blocks Render */}
+            <div className="space-y-8 pt-2">
+              {blocks.map((b: any, i: number) => (
+                <div key={i} className="space-y-4">
+                  {b.tipe === "PARAGRAF" && (
+                    <p className="text-base sm:text-lg text-foreground/90 leading-relaxed font-sans">{b.data?.teks}</p>
                   )}
-                </Button>
+
+                  {b.tipe === "PASAL_HUKUM" && (
+                    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 space-y-2.5 shadow-2xs">
+                      <div className="flex items-center gap-2 text-amber-400 font-bold text-sm sm:text-base">
+                        <Scale className="h-5 w-5 shrink-0" /> {b.data?.undang_undang} • {b.data?.pasal}
+                      </div>
+                      <p className="text-sm sm:text-base italic text-foreground/95 leading-relaxed font-serif">"{b.data?.bunyi_pasal}"</p>
+                    </div>
+                  )}
+
+                  {b.tipe === "CONTOH_KASUS" && (
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 space-y-4 shadow-2xs">
+                      <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm sm:text-base">
+                        <Calculator className="h-5 w-5 shrink-0" /> {b.data?.judul_kasus || "Studi Kasus Perhitungan"}
+                      </div>
+                      <p className="text-sm sm:text-base text-foreground/90 leading-relaxed">{b.data?.skenario}</p>
+                      {b.data?.perhitungan && (
+                        <div className="font-mono text-xs sm:text-sm bg-slate-900 text-emerald-400 p-5 rounded-xl border border-slate-700 shadow-xs whitespace-pre-wrap leading-relaxed">
+                          {b.data?.perhitungan}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {b.tipe === "GLOSARIUM" && (
+                    <div className="rounded-2xl border border-primary/30 bg-primary/10 p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm sm:text-base">
+                      <span className="font-bold text-primary">{b.data?.istilah}</span>
+                      <span className="text-foreground/90">{b.data?.definisi}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Completion Card */}
+            <div className="mt-12 rounded-2xl border border-border bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xs">
+              <div>
+                <h3 className="font-black text-lg text-foreground">
+                  {progressVal === 100 ? "Materi Selesai! Uji Pemahaman" : "Selesaikan Materi Ini"}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                  {progressVal === 100
+                    ? "Selamat! Anda telah membaca seluruh materi ini. Lanjut kerjakan kuis evaluasi."
+                    : "Klik tombol di samping untuk menandai materi ini tuntas."}
+                </p>
               </div>
-            </section>
+              <Button onClick={handleLanjutBelajar} className="w-full sm:w-auto shrink-0 rounded-xl font-bold text-xs sm:text-sm h-11 px-6 shadow-xs">
+                {progressVal === 100 ? (
+                  <>
+                    Uji Pemahaman via Kuis <ChevronRight className="ml-1.5 h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Lanjutkan Belajar <CheckCircle2 className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
           </article>
 
-          {/* Table of Contents Sidebar */}
-          <aside className="space-y-4">
-            <div className="rounded-2xl border bg-card p-5 sticky top-28">
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Daftar Isi Materi</p>
-              <ul className="space-y-2 text-xs">
-                <li>
-                  <a href="#pengantar" className="text-muted-foreground hover:text-primary transition-colors">
-                    1. Pengantar Lapisan Tarif
-                  </a>
-                </li>
-                <li>
-                  <a href="#tabel-tarif" className="text-muted-foreground hover:text-primary transition-colors">
-                    2. Tabel Lapisan Tarif UU HPP
-                  </a>
-                </li>
-                <li>
-                  <a href="#contoh-kasus" className="text-muted-foreground hover:text-primary transition-colors">
-                    3. Contoh Perhitungan
-                  </a>
-                </li>
-              </ul>
+          {/* Dynamic Sidebar (Full Desktop View) */}
+          <aside className="space-y-6 hidden lg:block">
+            <div className="rounded-2xl border border-border/80 bg-card p-6 sticky top-28 space-y-5 shadow-xs">
+              <div className="space-y-2 border-b border-border/60 pb-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4 text-primary" /> Informasi Materi
+                </p>
+                <p className="font-extrabold text-foreground text-sm leading-snug">{lesson?.judul}</p>
+                <Badge variant="outline" className="text-[10px] font-mono font-bold rounded-full border-primary/30 text-primary">
+                  {(lesson as any)?.modul?.judul || "Brevet Pajak"}
+                </Badge>
+              </div>
 
-              <div className="mt-6 border-t pt-4">
-                <Button asChild size="sm" className="w-full text-xs">
-                  <Link to="/belajar/materi/$slug/quiz" params={{ slug }}>
-                    Uji Pemahaman via Kuis
+              {/* Dynamic Outline Sections */}
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Poin Pembahasan Materi:</p>
+                <div className="space-y-2 text-xs">
+                  {blocks.map((b: any, idx: number) => {
+                    if (b.tipe === "PASAL_HUKUM") {
+                      return (
+                        <div key={idx} className="flex items-center gap-1.5 text-amber-400 font-semibold">
+                          <Scale className="h-3.5 w-3.5 shrink-0" /> {b.data?.undang_undang || "Landasan Hukum"}
+                        </div>
+                      );
+                    }
+                    if (b.tipe === "CONTOH_KASUS") {
+                      return (
+                        <div key={idx} className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                          <Calculator className="h-3.5 w-3.5 shrink-0" /> {b.data?.judul_kasus || "Studi Kasus"}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              </div>
+
+              <div className="border-t border-border/60 pt-4">
+                <Button asChild size="sm" className="w-full text-xs font-bold rounded-xl h-10 shadow-xs">
+                  <Link to="/kuis/$slug" params={{ slug: `kuis-${lesson?.id || slug}` }}>
+                    ⚡ Uji Pemahaman via Kuis
                   </Link>
                 </Button>
               </div>

@@ -9,6 +9,7 @@ async function seedQuiz() {
     .insert(quizzes)
     .values({
       judul: "Kuis Evaluasi Brevet Pajak A & B",
+      slug: "kuis-evaluasi-brevet-pajak-ab",
       deskripsi: "Evaluasi pemahaman Ketentuan Umum Perpajakan (KUP), PPh Orang Pribadi, PPN, dan PPh 21 TER.",
       tipeKuis: "PENILAIAN",
       batasWaktuMenit: 15,

@@ -1,5 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Wand2, Copy, Check, Download, ArrowLeft, Sparkles, AlertCircle } from "lucide-react";
+import {
+  Wand2,
+  Copy,
+  Check,
+  Download,
+  ArrowLeft,
+  Sparkles,
+  AlertCircle,
+  CheckSquare,
+  Square,
+  FileCode,
+  Layers,
+  ChevronDown,
+} from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { PageBody, PageHeader } from "@/components/layout/AppShell";
@@ -47,10 +60,7 @@ const TIPE_OUTPUT_OPTIONS = [
 ];
 
 const LEVEL_OPTIONS = ["BREVET_A", "BREVET_B", "KEDUANYA"];
-const BAHASA_OPTIONS = ["Bahasa Indonesia", "English"];
 const TINGKAT_OPTIONS = ["DASAR", "MENENGAH", "LANJUT"];
-const TAHUN_OPTIONS = ["2025", "2024", "2023"];
-const SKEMA_OPTIONS = ["2.0", "1.5"];
 
 function injectVariables(template: string, vars: Record<string, string>): string {
   let result = template;
@@ -63,38 +73,63 @@ function injectVariables(template: string, vars: Record<string, string>): string
 function PromptCompilerPage() {
   const { engines, existingModules } = Route.useLoaderData();
 
-  // Variables form
+  // Variables form (simplified)
   const [topik, setTopik] = useState("");
   const [judulModul, setJudulModul] = useState("");
   const [level, setLevel] = useState("BREVET_A");
-  const [audiens, setAudiens] = useState("Peserta ujian Brevet Pajak A & B");
-  const [tahun, setTahun] = useState("2025");
   const [tipeOutput, setTipeOutput] = useState("MODUL_PEMBELAJARAN");
-  const [bahasa, setBahasa] = useState("Bahasa Indonesia");
-  const [versiSkema, setVersiSkema] = useState("2.0");
   const [tingkat, setTingkat] = useState("DASAR");
 
-  // Engine toggles (active engines per compiler session)
+  // Defaults as requested:
+  const tahunSekarang = useMemo(() => new Date().getFullYear().toString(), []);
+  const defaultAudiens = "Peserta yang belajar Brevet Pajak A & B";
+  const defaultBahasa = "Bahasa Indonesia";
+  const defaultSkema = "2.0";
+
+  // Engine toggles
   const [activeEngineIds, setActiveEngineIds] = useState<Set<string>>(
-    () => new Set(engines.filter((e: any) => e.aktif).map((e: any) => e.id))
+    () => new Set((engines as any[]).filter((e) => e.aktif).map((e) => e.id))
   );
 
   const [copied, setCopied] = useState(false);
+  const [showConfig, setShowConfig] = useState(true);
 
   const variables: Record<string, string> = {
-    TOPIK_MATERI: topik,
-    JUDUL_MODUL: judulModul,
+    // Primary & Aliases requested by user
+    TOPIK: topik || "{{TOPIK}}",
+    TOPIK_MATERI: topik || "{{TOPIK_MATERI}}",
+    JUDUL_MODUL: judulModul || "{{JUDUL_MODUL}}",
+    LEVEL: level,
     LEVEL_BREVET: level,
-    TARGET_AUDIENS: audiens,
-    TAHUN_REGULASI: tahun,
-    TIPE_OUTPUT: tipeOutput,
-    BAHASA: bahasa,
-    VERSI_SKEMA: versiSkema,
+    TINGKAT: tingkat,
     TINGKAT_KESULITAN: tingkat,
+    OUTPUT_SIZE: "LENGKAP",
+    BAHASA: defaultBahasa,
+    BAHASA_OUTPUT: defaultBahasa,
+    AUDIENS: defaultAudiens,
+    TARGET_AUDIENS: defaultAudiens,
+    TARGET_PEMBELAJAR: defaultAudiens,
+    VISUAL_STYLE: "Infografis pendidikan profesional, clean, tanpa watermark",
+    GAYA_VISUAL: "Infografis pendidikan profesional, clean, tanpa watermark",
+    GAYA_PENJELASAN: "Formal, jelas, pedagogis, mudah dipahami dengan analogi",
+
+    // System & Schema meta
+    TAHUN_REGULASI: tahunSekarang,
+    REGULASI_VERSI: tahunSekarang,
+    TIPE_OUTPUT: tipeOutput,
+    OUTPUT_TYPE: tipeOutput,
+    JENIS_KONTEN: tipeOutput,
+    VERSI_SKEMA: defaultSkema,
+    JSON_SCHEMA_VERSION: defaultSkema,
+    JENIS_ASSESSMENT: "Quiz Pilihan Ganda, Case Study, & Practice Exercise",
+    MIN_SOAL: "5",
+    MODUL_SEBELUMNYA: "Modul terdahulu jika ada",
+    MODUL_BERIKUTNYA: "Modul lanjutan jika ada",
+    MODUL_TERKAIT: "Modul sejenis",
+    DAFTAR_MODUL_TERSEDIA: "Modul Brevet A/B terdaftar",
     IDENTITAS_AI: "Ahli Kurikulum & Pengajar Utama",
   };
 
-  // Automatically inject continuity context from existing modules
   const kontinuitasContext = useMemo(() => {
     if (!existingModules || existingModules.length === 0) return "";
     return `\n\n[KONTEKS MODUL YANG SUDAH ADA — HINDARI DUPLIKASI]\n${(existingModules as any[]).map((m, i) => `${i + 1}. ${m.judul}: ${m.deskripsi || "-"}`).join("\n")}\n\nBuat MODUL KE-${(existingModules as any[]).length + 1} yang melanjutkan kurikulum tanpa mengulang topik di atas.`;
@@ -109,8 +144,7 @@ function PromptCompilerPage() {
   const superPrompt = useMemo(() => {
     if (compiledEngines.length === 0) return "";
     const sections = compiledEngines.map((engine) => {
-      const compiled = injectVariables(engine.kontenTemplate, variables);
-      return compiled;
+      return injectVariables(engine.kontenTemplate, variables);
     });
     return sections.join("\n\n" + "─".repeat(60) + "\n\n") + kontinuitasContext;
   }, [compiledEngines, variables, kontinuitasContext]);
@@ -122,8 +156,8 @@ function PromptCompilerPage() {
     if (!superPrompt) return;
     navigator.clipboard.writeText(superPrompt);
     setCopied(true);
-    toast.success("Super Prompt berhasil disalin! Paste ke Claude.ai");
-    setTimeout(() => setCopied(false), 2000);
+    toast.success("Super Prompt berhasil disalin ke clipboard! Siap dipaste ke Claude.ai");
+    setTimeout(() => setCopied(false), 2500);
   }, [superPrompt]);
 
   const handleDownload = useCallback((format: "txt" | "md") => {
@@ -150,7 +184,15 @@ function PromptCompilerPage() {
     });
   };
 
-  const missingVars = !topik || !judulModul;
+  const toggleSelectAll = () => {
+    if (activeEngineIds.size === engines.length) {
+      setActiveEngineIds(new Set());
+    } else {
+      setActiveEngineIds(new Set((engines as any[]).map((e) => e.id)));
+    }
+  };
+
+  const missingVars = !topik.trim() || !judulModul.trim();
 
   return (
     <>
@@ -171,36 +213,56 @@ function PromptCompilerPage() {
         }
       />
 
-      <PageBody>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* LEFT: Variables Form */}
-          <div className="lg:col-span-2 space-y-5">
-            <div className="rounded-2xl border bg-card p-5 shadow-xs space-y-4">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-primary" /> Variabel Generator
+      <PageBody className="space-y-6 pb-24">
+        {/* TOP PANEL: Form Input & Engine Selector (Full Width Expandable) */}
+        <div className="rounded-2xl border bg-card shadow-xs overflow-hidden">
+          <div
+            onClick={() => setShowConfig(!showConfig)}
+            className="flex items-center justify-between px-5 py-3.5 border-b bg-muted/20 cursor-pointer select-none hover:bg-muted/40 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="font-bold text-sm text-foreground">
+                Pengaturan Variabel & Engine Kompilasi
               </span>
+              {topik && judulModul && (
+                <Badge variant="secondary" className="text-[10px] font-mono">
+                  {topik} ({level})
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-medium">
+                {showConfig ? "Sembunyikan Form" : "Buka Form"}
+              </span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showConfig ? "rotate-180" : ""}`} />
+            </div>
+          </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Topik Materi *</Label>
-                <Input
-                  value={topik}
-                  onChange={(e) => setTopik(e.target.value)}
-                  placeholder="Contoh: PPh Pasal 21 TER"
-                  className="text-xs bg-background"
-                />
-              </div>
+          {showConfig && (
+            <div className="p-5 space-y-6">
+              {/* Form Input Grid (Clean 5 Fields) */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
+                  <Label className="text-xs font-bold">Topik Materi *</Label>
+                  <Input
+                    value={topik}
+                    onChange={(e) => setTopik(e.target.value)}
+                    placeholder="Contoh: PPh Pasal 21 TER"
+                    className="text-xs bg-background"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Judul Modul *</Label>
-                <Input
-                  value={judulModul}
-                  onChange={(e) => setJudulModul(e.target.value)}
-                  placeholder="Contoh: Pemotongan & Pemungutan PPh"
-                  className="text-xs bg-background"
-                />
-              </div>
+                <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
+                  <Label className="text-xs font-bold">Judul Modul *</Label>
+                  <Input
+                    value={judulModul}
+                    onChange={(e) => setJudulModul(e.target.value)}
+                    placeholder="Contoh: Pemotongan & Pemungutan PPh"
+                    className="text-xs bg-background"
+                  />
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">Level Brevet</Label>
                   <select
@@ -208,156 +270,183 @@ function PromptCompilerPage() {
                     onChange={(e) => setLevel(e.target.value)}
                     className="w-full h-9 px-2.5 rounded-xl border bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    {LEVEL_OPTIONS.map((l) => <option key={l} value={l}>{l}</option>)}
+                    {LEVEL_OPTIONS.map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))}
                   </select>
                 </div>
+
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Tingkat</Label>
+                  <Label className="text-xs font-bold">Tingkat Kesulitan</Label>
                   <select
                     value={tingkat}
                     onChange={(e) => setTingkat(e.target.value)}
                     className="w-full h-9 px-2.5 rounded-xl border bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    {TINGKAT_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                    {TINGKAT_OPTIONS.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div className="space-y-1.5">
+
+                <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
                   <Label className="text-xs font-bold">Tipe Output</Label>
                   <select
                     value={tipeOutput}
                     onChange={(e) => setTipeOutput(e.target.value)}
                     className="w-full h-9 px-2.5 rounded-xl border bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    {TIPE_OUTPUT_OPTIONS.map((t) => <option key={t} value={t}>{t.replace(/_/g, " ")}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Tahun Regulasi</Label>
-                  <select
-                    value={tahun}
-                    onChange={(e) => setTahun(e.target.value)}
-                    className="w-full h-9 px-2.5 rounded-xl border bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    {TAHUN_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Bahasa</Label>
-                  <select
-                    value={bahasa}
-                    onChange={(e) => setBahasa(e.target.value)}
-                    className="w-full h-9 px-2.5 rounded-xl border bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    {BAHASA_OPTIONS.map((b) => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Skema JSON</Label>
-                  <select
-                    value={versiSkema}
-                    onChange={(e) => setVersiSkema(e.target.value)}
-                    className="w-full h-9 px-2.5 rounded-xl border bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    {SKEMA_OPTIONS.map((s) => <option key={s} value={s}>v{s}</option>)}
+                    {TIPE_OUTPUT_OPTIONS.map((t) => (
+                      <option key={t} value={t}>
+                        {t.replace(/_/g, " ")}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Target Audiens</Label>
-                <Input
-                  value={audiens}
-                  onChange={(e) => setAudiens(e.target.value)}
-                  className="text-xs bg-background"
-                />
+              {/* Engine Selector Badges */}
+              <div className="border-t pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Layers className="h-3.5 w-3.5 text-primary" /> Engine Kompilasi Aktif ({compiledEngines.length}/{engines.length})
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={toggleSelectAll}
+                    className="h-6 text-[11px] font-semibold text-primary"
+                  >
+                    {activeEngineIds.size === engines.length ? "Nihilkan Semua" : "Pilih Semua (18 Engine)"}
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(engines as any[]).map((engine) => {
+                    const isChecked = activeEngineIds.has(engine.id);
+                    return (
+                      <button
+                        key={engine.id}
+                        type="button"
+                        onClick={() => toggleEngine(engine.id)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                          isChecked
+                            ? "bg-primary/15 text-primary border border-primary/40 font-bold"
+                            : "bg-muted/40 text-muted-foreground border border-transparent hover:bg-muted"
+                        }`}
+                      >
+                        {isChecked ? (
+                          <CheckSquare className="h-3.5 w-3.5 shrink-0" />
+                        ) : (
+                          <Square className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                        )}
+                        <span>#{engine.urutanKompilasi} {engine.nama}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Active Engines Selector */}
-            <div className="rounded-2xl border bg-card p-5 shadow-xs space-y-3">
-              <span className="text-xs font-bold text-foreground">Engine Aktif ({compiledEngines.length}/{engines.length})</span>
-              <div className="space-y-1.5">
-                {(engines as any[]).map((engine) => (
-                  <label key={engine.id} className="flex items-center gap-2.5 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={activeEngineIds.has(engine.id)}
-                      onChange={() => toggleEngine(engine.id)}
-                      className="w-3.5 h-3.5 rounded accent-primary"
-                    />
-                    <span className={`text-xs font-semibold ${activeEngineIds.has(engine.id) ? "text-foreground" : "text-muted-foreground"}`}>
-                      #{engine.urutanKompilasi} {engine.nama}
-                    </span>
-                  </label>
-                ))}
-              </div>
+        {/* Validation Warning */}
+        {missingVars && (
+          <div className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-3 text-xs text-amber-400 font-semibold shadow-xs">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>Harap isi <strong>"Topik Materi"</strong> dan <strong>"Judul Modul"</strong> pada form di atas untuk meng-compile Super Prompt.</span>
+          </div>
+        )}
+
+        {/* FULL WIDTH SUPER PROMPT LIVE PREVIEW */}
+        <div className="rounded-2xl border bg-card shadow-md overflow-hidden flex flex-col min-h-[550px]">
+          {/* Header Bar */}
+          <div className="flex items-center justify-between px-5 py-3 border-b bg-muted/30">
+            <div className="flex items-center gap-2.5">
+              <FileCode className="h-4 w-4 text-primary" />
+              <span className="font-bold text-sm text-foreground">
+                Super Prompt (Full-Width Live Preview)
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
+              <span><strong className="text-foreground">{charCount.toLocaleString()}</strong> karakter</span>
+              <span>·</span>
+              <span>~<strong className="text-foreground">{tokenEstimate.toLocaleString()}</strong> token</span>
+              <span>·</span>
+              <span><strong className="text-foreground">{compiledEngines.length}</strong> engine</span>
             </div>
           </div>
 
-          {/* RIGHT: Compiled Prompt Preview */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* Info bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4 shadow-xs">
-              <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
-                <span><strong className="text-foreground">{charCount.toLocaleString()}</strong> karakter</span>
-                <span>·</span>
-                <span>~<strong className="text-foreground">{tokenEstimate.toLocaleString()}</strong> token</span>
-                <span>·</span>
-                <span><strong className="text-foreground">{compiledEngines.length}</strong> engine</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => handleDownload("txt")} className="h-8 text-xs px-2.5 font-semibold">
-                  <Download className="mr-1 h-3.5 w-3.5" /> TXT
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => handleDownload("md")} className="h-8 text-xs px-2.5 font-semibold">
-                  <Download className="mr-1 h-3.5 w-3.5" /> MD
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleCopy}
-                  disabled={missingVars || !superPrompt}
-                  className="h-8 text-xs px-3 font-bold shadow-sm"
-                >
-                  {copied ? <Check className="mr-1 h-3.5 w-3.5 text-success" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
-                  {copied ? "Tersalin!" : "Salin Super Prompt"}
-                </Button>
-              </div>
-            </div>
+          {/* Active Engines Tags */}
+          <div className="px-5 py-2 border-b bg-muted/10 flex flex-wrap gap-1">
+            {compiledEngines.map((e) => (
+              <Badge key={e.id} variant="outline" className="text-[9px] font-mono px-2 py-0.5 bg-background">
+                #{e.urutanKompilasi} {e.nama}
+              </Badge>
+            ))}
+          </div>
 
-            {/* Validation warning */}
-            {missingVars && (
-              <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-400 font-semibold">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                Isi "Topik Materi" dan "Judul Modul" terlebih dahulu untuk meng-compile prompt.
+          {/* Code Body — Large Area */}
+          <div className="flex-1 p-5 overflow-y-auto bg-background/50 font-mono text-xs text-foreground leading-relaxed min-h-[420px]">
+            {superPrompt ? (
+              <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed selection:bg-primary/30">
+                {superPrompt}
+              </pre>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-center text-muted-foreground gap-3">
+                <Sparkles className="h-10 w-10 text-primary/30 animate-pulse" />
+                <span className="text-xs max-w-sm">
+                  Masukkan Topik & Judul Modul di form bagian atas untuk meng-compile Super Prompt 18 engine secara langsung.
+                </span>
               </div>
             )}
+          </div>
 
-            {/* Compiled Prompt */}
-            <div className="rounded-2xl border bg-card shadow-xs overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/20">
-                <span className="text-xs font-bold flex items-center gap-1.5">
-                  <Wand2 className="h-3.5 w-3.5 text-primary" /> Super Prompt (Live Preview)
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {compiledEngines.map((e) => (
-                    <Badge key={e.id} variant="outline" className="text-[9px] font-mono px-1.5 py-0">
-                      {e.kodeEngine.split("_")[0]}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div className="h-[480px] overflow-y-auto p-4">
-                {superPrompt ? (
-                  <pre className="whitespace-pre-wrap font-mono text-[11px] text-foreground leading-relaxed">
-                    {superPrompt}
-                  </pre>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
-                    <Sparkles className="h-8 w-8 text-primary/30" />
-                    <span className="text-xs">Isi variabel di kiri untuk melihat Super Prompt yang di-compile.</span>
-                  </div>
-                )}
-              </div>
+          {/* MAIN ACTION BAR AT THE BOTTOM (Besar, Jelas, & Nyaman untuk Copy) */}
+          <div className="border-t bg-muted/40 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-muted-foreground leading-relaxed text-center sm:text-left">
+              <strong className="text-foreground">Langkah Selanjutnya:</strong> Salin Super Prompt di atas ➔ Buka <a href="https://claude.ai" target="_blank" rel="noreferrer" className="text-primary underline font-bold">Claude.ai</a> ➔ Paste ➔ Unduh JSON Artifact ➔ Impor di CMS Modul.
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => handleDownload("txt")}
+                disabled={missingVars || !superPrompt}
+                className="h-10 text-xs px-3 font-semibold shadow-2xs"
+              >
+                <Download className="mr-1.5 h-4 w-4" /> Download TXT
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => handleDownload("md")}
+                disabled={missingVars || !superPrompt}
+                className="h-10 text-xs px-3 font-semibold shadow-2xs"
+              >
+                <Download className="mr-1.5 h-4 w-4" /> Download MD
+              </Button>
+
+              <Button
+                type="button"
+                size="lg"
+                onClick={handleCopy}
+                disabled={missingVars || !superPrompt}
+                className="h-10 text-xs sm:text-sm px-5 font-bold bg-primary text-primary-foreground shadow-md hover:bg-primary/90 flex-1 sm:flex-none"
+              >
+                {copied ? <Check className="mr-2 h-4 w-4 text-success" /> : <Copy className="mr-2 h-4 w-4" />}
+                {copied ? "Berhasil Disalin!" : "⚡ Salin Super Prompt"}
+              </Button>
             </div>
           </div>
         </div>

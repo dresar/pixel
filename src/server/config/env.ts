@@ -16,6 +16,7 @@ export const env = {
   betterAuthSecret: process.env.BETTER_AUTH_SECRET!,
   baseUrl: process.env.BASE_URL!,
   apiKeyEncryptionSecret: process.env.API_KEY_ENCRYPTION_SECRET!,
+  geminiModel: process.env.GEMINI_MODEL || "gemini-2.5-flash",
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "demo",
     apiKey: process.env.CLOUDINARY_API_KEY ?? "1234567890",

@@ -84,3 +84,30 @@ export const hapusApiKey = createServerFn({ method: "POST" })
       return gagal("Terjadi kesalahan sistem.", "INTERNAL_ERROR");
     }
   });
+
+export const tesApiKeyServer = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    try {
+      const sesi = await validasiSesi();
+      await validasiPeran(sesi.userId, membutuhkanSuperAdmin());
+      const hasil = await apiKeysService.tesKey(data.id);
+      if (hasil.success) return sukses(hasil.message, null);
+      return gagal(hasil.message, "KEY_TEST_FAILED");
+    } catch (error) {
+      if (isAppError(error)) return gagal(error.message, error.code);
+      return gagal("Terjadi kesalahan saat menguji API key.", "INTERNAL_ERROR");
+    }
+  });
+
+export const tesSemuaApiKeyServer = createServerFn({ method: "POST" }).handler(async () => {
+  try {
+    const sesi = await validasiSesi();
+    await validasiPeran(sesi.userId, membutuhkanSuperAdmin());
+    const hasil = await apiKeysService.tesSemuaKey();
+    return sukses(`Tes selesai: ${hasil.ok} Aktif, ${hasil.error} Error (dipindahkan ke urutan akhir).`, hasil);
+  } catch (error) {
+    if (isAppError(error)) return gagal(error.message, error.code);
+    return gagal("Terjadi kesalahan saat menguji semua API key.", "INTERNAL_ERROR");
+  }
+});

@@ -2,9 +2,16 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { geminiKeyRotator } from "./key-rotator";
 import { logger } from "../../../shared/logger/logger";
 import { ExternalServiceError } from "../../../shared/errors/AppError";
+import { env } from "../../../config/env";
 
-const MODEL_NAME = "gemini-1.5-flash-latest";
-const MAX_RETRIES = 3;
+const CANDIDATE_MODELS = [
+  env.geminiModel || "gemini-3.1-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+];
+const MAX_RETRIES = 5;
 
 type GeminiRequest = {
   prompt: string;
@@ -24,11 +31,13 @@ export async function panggilGemini(request: GeminiRequest): Promise<GeminiRespo
   while (percobaan < MAX_RETRIES) {
     const keySesi = await geminiKeyRotator.ambilKeyBerikutnya();
     const mulai = Date.now();
+    const rawModel = CANDIDATE_MODELS[percobaan % CANDIDATE_MODELS.length];
+    const targetModel = rawModel.toLowerCase().trim().replace(/\s+/g, "-");
 
     try {
       const client = new GoogleGenerativeAI(keySesi.apiKeyDecrypted);
       const model = client.getGenerativeModel({
-        model: MODEL_NAME,
+        model: targetModel,
         systemInstruction: request.systemInstruction,
       });
 
@@ -37,7 +46,7 @@ export async function panggilGemini(request: GeminiRequest): Promise<GeminiRespo
       const durasiMs = Date.now() - mulai;
 
       await geminiKeyRotator.laporkanSukses(keySesi.record.id);
-      logger.ai("Gemini: permintaan berhasil", { keyId: keySesi.record.id, durasiMs });
+      logger.ai("Gemini: permintaan berhasil", { keyId: keySesi.record.id, model: targetModel, durasiMs });
 
       return {
         teks,

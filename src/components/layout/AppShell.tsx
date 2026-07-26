@@ -86,7 +86,6 @@ const adminNav: NavItem[] = [
   { to: "/admin/materi", label: "Kelola Materi", icon: BookOpen },
   { to: "/admin/kuis", label: "Kelola Kuis", icon: ClipboardList },
   { to: "/admin/key", label: "Gemini Keys", icon: Wand2, badge: "API" },
-  { to: "/admin/json", label: "Konten JSON", icon: FileJson },
   { to: "/admin/gambar", label: "Media", icon: ImageIcon },
   { to: "/admin/pengguna", label: "Pengguna", icon: Users },
   { to: "/admin/pengaturan", label: "Pengaturan", icon: Settings },
@@ -103,8 +102,16 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
   return (
     <ul className="space-y-0.5">
       {items.map((item) => {
+        const hasMoreSpecificMatch = items.some(
+          (other) =>
+            other.to !== item.to &&
+            other.to.length > item.to.length &&
+            (pathname === other.to || (other.to !== "/" && pathname.startsWith(other.to + "/")))
+        );
+
         const active =
-          pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to + "/")) ||
+          (pathname === item.to ||
+            (item.to !== "/" && pathname.startsWith(item.to + "/") && !hasMoreSpecificMatch)) ||
           (item.to === "/admin/dashboard" && (pathname === "/admin" || pathname === "/admin/"));
         const Icon = item.icon;
         return (
@@ -478,18 +485,20 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = pathname.startsWith("/admin");
 
   useEffect(() => {
     setPortalTarget(document.getElementById("top-header-portal"));
   }, []);
 
-  // Bagian 1: Judul & Deskripsi di-render ke Top Navbar (Disembunyikan di Mobile)
-  const headerContent = (
+  // Bagian 1: Judul & Deskripsi di-render ke Top Navbar HANYA untuk Admin Panel
+  const headerContent = isAdmin ? (
     <div className="hidden sm:flex flex-col min-w-0 justify-center pl-1">
       <h1 className="text-sm font-bold tracking-tight truncate text-foreground">{title}</h1>
       {description && <span className="text-[10px] text-muted-foreground truncate hidden lg:block">{description}</span>}
     </div>
-  );
+  ) : null;
 
   return (
     <>

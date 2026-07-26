@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getDaftarKuis, hapusKuisAdmin, imporKuisLengkapAdmin } from "@/functions/quiz";
+import { getDaftarKuis, hapusKuisAdmin, imporKuisLengkapAdmin, buatKuisUjiKompetensiRandom } from "@/functions/quiz";
 import { getDaftarModul } from "@/functions/modules";
 
 export const Route = createFileRoute("/_app/admin/kuis/")({
@@ -93,20 +93,21 @@ Lakukan analisis mendalam terhadap materi kurikulum perpajakan berikut:
 MODUL: ${modJudul}
 DESKRIPSI MATERI: ${modDeskripsi}
 
-Susunlah 10-15 Soal Kuis Evaluasi Ujian Pilihan Ganda (4 Opsi: A, B, C, D) yang SANGAT MENDALAM, mencakup perhitungan matematika pajak, dasar hukum UU HPP No. 7/2021, PP 55/2022, PMK 168/2023 TER PPh 21, PPN 11%-12%, serta prosedur Coretax DJP.
+Susunlah 10-15 Soal Kuis Evaluasi Ujian yang terdiri dari KOMBINASI Pilihan Ganda (4 Opsi: A, B, C, D) dan SOAL ESAI (Siswa Mengetik Sendiri).
+Setiap soal esai WAJIB memiliki "kunciJawabanEsai", "poinUtama" (Main Points acuan AI Gemini), dan "rentanNilai" (0-100).
 
 ATURAN KHUSUS GAMBAR / DIAGRAM VISUAL:
 Jika suatu soal membutuhkan visual pendukung (seperti alur Coretax, skema e-Faktur, form SPT, atau tabel perhitungan), sertakan field "promptGambar" yang berisi deskripsi prompt gambar detail agar admin dapat meng-generate gambar tersebut melalui AI Image Generator.
 
 ATURAN WAJIB OUTPUT CLAUDE ARTIFACT / CANVAS:
-1. Hasikan seluruh output dalam bentuk **Claude Artifact / Canvas (JSON File)**.
+1. Hasilkan seluruh output dalam bentuk **Claude Artifact / Canvas (JSON File)**.
 2. Output WAJIB 100% VALID JSON MURNI tanpa teks pembuka atau penutup.
 
-SKEMA JSON ARTIFACT KUIS:
+SKEMA JSON ARTIFACT KUIS (PILIHAN GANDA & ESAI):
 {
   "judul": "Kuis Evaluasi: ${modJudul}",
   "deskripsi": "Ujian kompetensi perpajakan Brevet A/B untuk modul ${modJudul}.",
-  "batasWaktuMenit": 20,
+  "batasWaktuMenit": 25,
   "nilaiMinimumLulus": 70,
   "pertanyaan": [
     {
@@ -121,6 +122,19 @@ SKEMA JSON ARTIFACT KUIS:
         { "kode": "C", "teks": "Rp 200.000", "isBenar": false },
         { "kode": "D", "teks": "Rp 75.000", "isBenar": false }
       ]
+    },
+    {
+      "teksPertanyaan": "Jelaskan secara analisis perbedaan mendasar mekanisme pemotongan PPh 21 sebelum dan sesudah PMK 168/2023 menggunakan kata-kata Anda sendiri...",
+      "tipeSoal": "ESAI",
+      "pembahasan": "Kunci jawaban acuan lengkap untuk penilaian evaluator AI Gemini.",
+      "kunciJawabanEsai": "Mekanisme TER memotong bulanan berdasarkan tabel bruto, sedangkan masa pajak terakhir dihitung ulang secara tahunan.",
+      "poinUtama": [
+        "Penyederhanaan pemotongan bulanan dengan Tarif Efektif Rata-rata (TER)",
+        "Pengelompokan status PTKP menjadi Kategori TER A, B, dan C",
+        "Penghitungan ulang akhir tahun pajak tetap menggunakan tarif Pasal 17 ayat 1a UU PPh"
+      ],
+      "rentanNilai": { "skorMin": 0, "skorMax": 100, "nilaiLulus": 70 },
+      "urutan": 2
     }
   ]
 }`;
@@ -206,11 +220,38 @@ SKEMA JSON ARTIFACT KUIS:
         description="Bank soal ujian perpajakan."
         breadcrumb={[{ label: "Admin", to: "/admin/dashboard" }, { label: "Kuis" }]}
         actions={
-          <Button size="sm" asChild className="font-bold shadow-sm">
-            <Link to="/admin/kuis/baru">
-              <Plus className="mr-1.5 h-4 w-4" /> Kuis Baru
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  const res = await buatKuisUjiKompetensiRandom();
+                  if (res.success) {
+                    toast.success(res.message);
+                    router.invalidate();
+                  } else {
+                    toast.error(res.message || "Gagal membuat kuis random");
+                  }
+                } catch {
+                  toast.error("Terjadi kesalahan sistem");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="font-bold shadow-2xs text-xs"
+            >
+              {loading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Award className="mr-1.5 h-3.5 w-3.5 text-primary" />}
+              Kuis Uji Kompetensi Random
+            </Button>
+            <Button size="sm" asChild className="font-bold shadow-sm text-xs">
+              <Link to="/admin/kuis/baru">
+                <Plus className="mr-1.5 h-4 w-4" /> Kuis Baru
+              </Link>
+            </Button>
+          </div>
         }
       />
 

@@ -47,16 +47,18 @@ import { Route as AppVisualRouteImport } from './routes/_app.visual'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppAdminDashboardRouteImport } from './routes/_app.admin.dashboard'
 import { Route as AppAdminGambarRouteImport } from './routes/_app.admin.gambar'
-import { Route as AppAdminJsonRouteImport } from './routes/_app.admin.json'
+import { Route as AppAdminGlosariumRouteImport } from './routes/_app.admin.glosarium'
 import { Route as AppAdminKeyRouteImport } from './routes/_app.admin.key'
 import { Route as AppAdminPengaturanRouteImport } from './routes/_app.admin.pengaturan'
 import { Route as AppAdminPenggunaRouteImport } from './routes/_app.admin.pengguna'
 import { Route as AppAdminPromptRouteImport } from './routes/_app.admin.prompt'
+import { Route as AppAdminReferensiRouteImport } from './routes/_app.admin.referensi'
 import { Route as AppAiCatatanRouteImport } from './routes/_app.ai.catatan'
 import { Route as AppAiChatRouteImport } from './routes/_app.ai.chat'
 import { Route as AppAiJelaskanRouteImport } from './routes/_app.ai.jelaskan'
 import { Route as AppAiRiwayatRouteImport } from './routes/_app.ai.riwayat'
 import { Route as AppBelajarMateriRouteImport } from './routes/_app.belajar.materi'
+import { Route as AppKuisSlugRouteImport } from './routes/_app.kuis.$slug'
 import { Route as AppKuisHasilRouteImport } from './routes/_app.kuis.hasil'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppAdminKuisIndexRouteImport } from './routes/_app.admin.kuis.index'
@@ -262,9 +264,9 @@ const AppAdminGambarRoute = AppAdminGambarRouteImport.update({
   path: '/admin/gambar',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminJsonRoute = AppAdminJsonRouteImport.update({
-  id: '/admin/json',
-  path: '/admin/json',
+const AppAdminGlosariumRoute = AppAdminGlosariumRouteImport.update({
+  id: '/admin/glosarium',
+  path: '/admin/glosarium',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdminKeyRoute = AppAdminKeyRouteImport.update({
@@ -285,6 +287,11 @@ const AppAdminPenggunaRoute = AppAdminPenggunaRouteImport.update({
 const AppAdminPromptRoute = AppAdminPromptRouteImport.update({
   id: '/admin/prompt',
   path: '/admin/prompt',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminReferensiRoute = AppAdminReferensiRouteImport.update({
+  id: '/admin/referensi',
+  path: '/admin/referensi',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAiCatatanRoute = AppAiCatatanRouteImport.update({
@@ -311,6 +318,11 @@ const AppBelajarMateriRoute = AppBelajarMateriRouteImport.update({
   id: '/materi',
   path: '/materi',
   getParentRoute: () => AppBelajarRoute,
+} as any)
+const AppKuisSlugRoute = AppKuisSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AppKuisRoute,
 } as any)
 const AppKuisHasilRoute = AppKuisHasilRouteImport.update({
   id: '/hasil',
@@ -429,16 +441,18 @@ export interface FileRoutesByFullPath {
   '/visual': typeof AppVisualRoute
   '/admin/dashboard': typeof AppAdminDashboardRoute
   '/admin/gambar': typeof AppAdminGambarRoute
-  '/admin/json': typeof AppAdminJsonRoute
+  '/admin/glosarium': typeof AppAdminGlosariumRoute
   '/admin/key': typeof AppAdminKeyRoute
   '/admin/pengaturan': typeof AppAdminPengaturanRoute
   '/admin/pengguna': typeof AppAdminPenggunaRoute
   '/admin/prompt': typeof AppAdminPromptRoute
+  '/admin/referensi': typeof AppAdminReferensiRoute
   '/ai/catatan': typeof AppAiCatatanRoute
   '/ai/chat': typeof AppAiChatRoute
   '/ai/jelaskan': typeof AppAiJelaskanRoute
   '/ai/riwayat': typeof AppAiRiwayatRoute
   '/belajar/materi': typeof AppBelajarMateriRouteWithChildren
+  '/kuis/$slug': typeof AppKuisSlugRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AppAdminIndexRoute
@@ -493,16 +507,18 @@ export interface FileRoutesByTo {
   '/visual': typeof AppVisualRoute
   '/admin/dashboard': typeof AppAdminDashboardRoute
   '/admin/gambar': typeof AppAdminGambarRoute
-  '/admin/json': typeof AppAdminJsonRoute
+  '/admin/glosarium': typeof AppAdminGlosariumRoute
   '/admin/key': typeof AppAdminKeyRoute
   '/admin/pengaturan': typeof AppAdminPengaturanRoute
   '/admin/pengguna': typeof AppAdminPenggunaRoute
   '/admin/prompt': typeof AppAdminPromptRoute
+  '/admin/referensi': typeof AppAdminReferensiRoute
   '/ai/catatan': typeof AppAiCatatanRoute
   '/ai/chat': typeof AppAiChatRoute
   '/ai/jelaskan': typeof AppAiJelaskanRoute
   '/ai/riwayat': typeof AppAiRiwayatRoute
   '/belajar/materi': typeof AppBelajarMateriRouteWithChildren
+  '/kuis/$slug': typeof AppKuisSlugRoute
   '/kuis/hasil': typeof AppKuisHasilRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AppAdminIndexRoute
@@ -559,16 +575,18 @@ export interface FileRoutesById {
   '/_app/visual': typeof AppVisualRoute
   '/_app/admin/dashboard': typeof AppAdminDashboardRoute
   '/_app/admin/gambar': typeof AppAdminGambarRoute
-  '/_app/admin/json': typeof AppAdminJsonRoute
+  '/_app/admin/glosarium': typeof AppAdminGlosariumRoute
   '/_app/admin/key': typeof AppAdminKeyRoute
   '/_app/admin/pengaturan': typeof AppAdminPengaturanRoute
   '/_app/admin/pengguna': typeof AppAdminPenggunaRoute
   '/_app/admin/prompt': typeof AppAdminPromptRoute
+  '/_app/admin/referensi': typeof AppAdminReferensiRoute
   '/_app/ai/catatan': typeof AppAiCatatanRoute
   '/_app/ai/chat': typeof AppAiChatRoute
   '/_app/ai/jelaskan': typeof AppAiJelaskanRoute
   '/_app/ai/riwayat': typeof AppAiRiwayatRoute
   '/_app/belajar/materi': typeof AppBelajarMateriRouteWithChildren
+  '/_app/kuis/$slug': typeof AppKuisSlugRoute
   '/_app/kuis/hasil': typeof AppKuisHasilRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/admin/': typeof AppAdminIndexRoute
@@ -625,16 +643,18 @@ export interface FileRouteTypes {
     | '/visual'
     | '/admin/dashboard'
     | '/admin/gambar'
-    | '/admin/json'
+    | '/admin/glosarium'
     | '/admin/key'
     | '/admin/pengaturan'
     | '/admin/pengguna'
     | '/admin/prompt'
+    | '/admin/referensi'
     | '/ai/catatan'
     | '/ai/chat'
     | '/ai/jelaskan'
     | '/ai/riwayat'
     | '/belajar/materi'
+    | '/kuis/$slug'
     | '/kuis/hasil'
     | '/api/auth/$'
     | '/admin/'
@@ -689,16 +709,18 @@ export interface FileRouteTypes {
     | '/visual'
     | '/admin/dashboard'
     | '/admin/gambar'
-    | '/admin/json'
+    | '/admin/glosarium'
     | '/admin/key'
     | '/admin/pengaturan'
     | '/admin/pengguna'
     | '/admin/prompt'
+    | '/admin/referensi'
     | '/ai/catatan'
     | '/ai/chat'
     | '/ai/jelaskan'
     | '/ai/riwayat'
     | '/belajar/materi'
+    | '/kuis/$slug'
     | '/kuis/hasil'
     | '/api/auth/$'
     | '/admin'
@@ -754,16 +776,18 @@ export interface FileRouteTypes {
     | '/_app/visual'
     | '/_app/admin/dashboard'
     | '/_app/admin/gambar'
-    | '/_app/admin/json'
+    | '/_app/admin/glosarium'
     | '/_app/admin/key'
     | '/_app/admin/pengaturan'
     | '/_app/admin/pengguna'
     | '/_app/admin/prompt'
+    | '/_app/admin/referensi'
     | '/_app/ai/catatan'
     | '/_app/ai/chat'
     | '/_app/ai/jelaskan'
     | '/_app/ai/riwayat'
     | '/_app/belajar/materi'
+    | '/_app/kuis/$slug'
     | '/_app/kuis/hasil'
     | '/api/auth/$'
     | '/_app/admin/'
@@ -1063,11 +1087,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminGambarRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/admin/json': {
-      id: '/_app/admin/json'
-      path: '/admin/json'
-      fullPath: '/admin/json'
-      preLoaderRoute: typeof AppAdminJsonRouteImport
+    '/_app/admin/glosarium': {
+      id: '/_app/admin/glosarium'
+      path: '/admin/glosarium'
+      fullPath: '/admin/glosarium'
+      preLoaderRoute: typeof AppAdminGlosariumRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/admin/key': {
@@ -1096,6 +1120,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/prompt'
       fullPath: '/admin/prompt'
       preLoaderRoute: typeof AppAdminPromptRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/referensi': {
+      id: '/_app/admin/referensi'
+      path: '/admin/referensi'
+      fullPath: '/admin/referensi'
+      preLoaderRoute: typeof AppAdminReferensiRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/ai/catatan': {
@@ -1132,6 +1163,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/belajar/materi'
       preLoaderRoute: typeof AppBelajarMateriRouteImport
       parentRoute: typeof AppBelajarRoute
+    }
+    '/_app/kuis/$slug': {
+      id: '/_app/kuis/$slug'
+      path: '/$slug'
+      fullPath: '/kuis/$slug'
+      preLoaderRoute: typeof AppKuisSlugRouteImport
+      parentRoute: typeof AppKuisRoute
     }
     '/_app/kuis/hasil': {
       id: '/_app/kuis/hasil'
@@ -1276,10 +1314,12 @@ const AppBelajarRouteWithChildren = AppBelajarRoute._addFileChildren(
 )
 
 interface AppKuisRouteChildren {
+  AppKuisSlugRoute: typeof AppKuisSlugRoute
   AppKuisHasilRoute: typeof AppKuisHasilRoute
 }
 
 const AppKuisRouteChildren: AppKuisRouteChildren = {
+  AppKuisSlugRoute: AppKuisSlugRoute,
   AppKuisHasilRoute: AppKuisHasilRoute,
 }
 
@@ -1315,11 +1355,12 @@ interface AppRouteChildren {
   AppVisualRoute: typeof AppVisualRoute
   AppAdminDashboardRoute: typeof AppAdminDashboardRoute
   AppAdminGambarRoute: typeof AppAdminGambarRoute
-  AppAdminJsonRoute: typeof AppAdminJsonRoute
+  AppAdminGlosariumRoute: typeof AppAdminGlosariumRoute
   AppAdminKeyRoute: typeof AppAdminKeyRoute
   AppAdminPengaturanRoute: typeof AppAdminPengaturanRoute
   AppAdminPenggunaRoute: typeof AppAdminPenggunaRoute
   AppAdminPromptRoute: typeof AppAdminPromptRoute
+  AppAdminReferensiRoute: typeof AppAdminReferensiRoute
   AppAiCatatanRoute: typeof AppAiCatatanRoute
   AppAiChatRoute: typeof AppAiChatRoute
   AppAiJelaskanRoute: typeof AppAiJelaskanRoute
@@ -1367,11 +1408,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppVisualRoute: AppVisualRoute,
   AppAdminDashboardRoute: AppAdminDashboardRoute,
   AppAdminGambarRoute: AppAdminGambarRoute,
-  AppAdminJsonRoute: AppAdminJsonRoute,
+  AppAdminGlosariumRoute: AppAdminGlosariumRoute,
   AppAdminKeyRoute: AppAdminKeyRoute,
   AppAdminPengaturanRoute: AppAdminPengaturanRoute,
   AppAdminPenggunaRoute: AppAdminPenggunaRoute,
   AppAdminPromptRoute: AppAdminPromptRoute,
+  AppAdminReferensiRoute: AppAdminReferensiRoute,
   AppAiCatatanRoute: AppAiCatatanRoute,
   AppAiChatRoute: AppAiChatRoute,
   AppAiJelaskanRoute: AppAiJelaskanRoute,

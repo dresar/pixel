@@ -44,9 +44,9 @@ export const apiKeysRepository = {
       .update(geminiApiKeys)
       .set({
         status: "ERROR",
+        prioritas: 9999,
         terakhirError: new Date(),
         pesanError,
-        errorCount: db.$count(geminiApiKeys, eq(geminiApiKeys.id, id)),
         updatedAt: new Date(),
       })
       .where(eq(geminiApiKeys.id, id));
@@ -81,6 +81,32 @@ export const apiKeysRepository = {
 
   async hapus(id: string): Promise<void> {
     await db.delete(geminiApiKeys).where(eq(geminiApiKeys.id, id));
+  },
+
+  async demoteKey(id: string, pesanError: string): Promise<void> {
+    await db
+      .update(geminiApiKeys)
+      .set({
+        status: "ERROR",
+        prioritas: 9999,
+        pesanError,
+        terakhirError: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(geminiApiKeys.id, id));
+  },
+
+  async setValidKey(id: string): Promise<void> {
+    await db
+      .update(geminiApiKeys)
+      .set({
+        status: "AKTIF",
+        prioritas: 0,
+        pesanError: null,
+        terakhirDigunakan: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(geminiApiKeys.id, id));
   },
 
   async cekDuplikat(apiKeyTerenkripsi: string): Promise<boolean> {
