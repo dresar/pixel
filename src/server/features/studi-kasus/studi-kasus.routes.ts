@@ -19,7 +19,7 @@ export const studiKasusRoutes = new Hono();
 studiKasusRoutes.get("/", async (c) => {
   try {
     const list = await ambilSemuaStudiKasus();
-    return sukses(c, list, "Berhasil mengambil daftar studi kasus");
+    return sukses(c, "Berhasil mengambil daftar studi kasus", list);
   } catch (err: any) {
     return gagal(c, err.message || "Gagal mengambil studi kasus", "INTERNAL_ERROR", 500);
   }
@@ -36,7 +36,7 @@ studiKasusRoutes.get("/:slug", async (c) => {
     if (!detail) {
       return gagal(c, "Studi kasus tidak ditemukan", "NOT_FOUND", 404);
     }
-    return sukses(c, detail, "Berhasil mengambil detail studi kasus");
+    return sukses(c, "Berhasil mengambil detail studi kasus", detail);
   } catch (err: any) {
     return gagal(c, err.message || "Gagal mengambil detail studi kasus", "INTERNAL_ERROR", 500);
   }
@@ -50,7 +50,7 @@ studiKasusRoutes.post("/admin", async (c) => {
       return gagal(c, "Judul studi kasus wajib diisi", "BAD_REQUEST", 400);
     }
     const baru = await tambahStudiKasus(body);
-    return sukses(c, baru, "Berhasil membuat studi kasus baru", 201);
+    return sukses(c, "Berhasil membuat studi kasus baru", baru, 201);
   } catch (err: any) {
     return gagal(c, err.message || "Gagal menambah studi kasus", "INTERNAL_ERROR", 500);
   }
@@ -65,7 +65,7 @@ studiKasusRoutes.patch("/admin/:id", async (c) => {
     if (!updated) {
       return gagal(c, "Studi kasus tidak ditemukan", "NOT_FOUND", 404);
     }
-    return sukses(c, updated, "Berhasil memperbarui studi kasus");
+    return sukses(c, "Berhasil memperbarui studi kasus", updated);
   } catch (err: any) {
     return gagal(c, err.message || "Gagal memperbarui studi kasus", "INTERNAL_ERROR", 500);
   }
@@ -76,7 +76,7 @@ studiKasusRoutes.delete("/admin/:id", async (c) => {
   try {
     const id = c.req.param("id");
     await hapusStudiKasus(id);
-    return sukses(c, { id }, "Berhasil menghapus studi kasus");
+    return sukses(c, "Berhasil menghapus studi kasus", { id });
   } catch (err: any) {
     return gagal(c, err.message || "Gagal menghapus studi kasus", "INTERNAL_ERROR", 500);
   }

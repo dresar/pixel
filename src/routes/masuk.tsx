@@ -10,8 +10,8 @@ import { AuthLayout } from "@/components/auth/AuthLayout";
 import { signIn } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/masuk")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: (search.redirect as string) || undefined,
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
   head: () => ({
     meta: [

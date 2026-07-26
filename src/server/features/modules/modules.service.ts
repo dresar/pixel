@@ -218,4 +218,60 @@ export const modulesService = {
 
     return modulesRepository.updateLesson(data.id, data);
   },
+
+  // ── Generate Prompt Gambar AI ─────────────────────────────────────────────
+  async generatePromptGambar(lessonId: string) {
+    const lesson = await modulesRepository.lessonById(lessonId);
+    if (!lesson) throw AppError.notFound("Materi tidak ditemukan");
+
+    const prompt = `Buat sebuah deskripsi gambar ilustrasi pendidikan yang menarik dan informatif untuk materi pajak berjudul: "${lesson.judul}". Gambar harus terlihat profesional, modern, dan cocok untuk platform pembelajaran digital.`;
+
+    try {
+      const result = await panggilGemini({ prompt });
+      const promptGambar = result.teks || prompt;
+
+      await modulesRepository.updateLesson(lessonId, { promptGambar });
+      return { promptGambar, lessonId };
+    } catch (err) {
+      logger.warn("Gagal generate prompt gambar via AI, menggunakan fallback.");
+      return { promptGambar: prompt, lessonId };
+    }
+  },
+
+  // ── Chapter CRUD ──────────────────────────────────────────────────────────
+  async tambahChapter(data: {
+    moduleId: string;
+    judul: string;
+    deskripsi?: string;
+    urutan?: number;
+  }) {
+    return modulesRepository.simpanChapter(data);
+  },
+
+  async updateChapter(
+    id: string,
+    data: { judul?: string; deskripsi?: string; urutan?: number },
+  ) {
+    return modulesRepository.updateChapter(id, data);
+  },
+
+  async hapusChapter(id: string) {
+    await modulesRepository.hapusChapter(id);
+  },
+
+  // ── Lesson CRUD ──────────────────────────────────────────────────────────
+  async updateLesson(
+    id: string,
+    data: {
+      judul?: string;
+      gambarUrl?: string;
+      promptGambar?: string;
+      statusPublikasi?: string;
+      kontenJson?: unknown;
+    },
+  ) {
+    const existing = await modulesRepository.lessonById(id);
+    if (!existing) throw AppError.notFound("Materi tidak ditemukan");
+    return modulesRepository.updateLesson(id, data);
+  },
 };

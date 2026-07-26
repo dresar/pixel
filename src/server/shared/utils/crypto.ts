@@ -22,7 +22,9 @@ export function dekripsi(text: string): string {
   if (!text) return "";
   if (!text.includes(":")) return text;
   try {
-    const [ivHex, encryptedHex] = text.split(":");
+    const colonIdx = text.indexOf(":");
+    const ivHex = text.slice(0, colonIdx);
+    const encryptedHex = text.slice(colonIdx + 1);
     const iv = Buffer.from(ivHex, "hex");
     const decipher = createDecipheriv(ALGORITHM, KEY, iv);
     let decrypted = decipher.update(encryptedHex, "hex", "utf8");
