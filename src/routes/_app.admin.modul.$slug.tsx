@@ -51,25 +51,18 @@ import {
 export const Route = createFileRoute("/_app/admin/modul/$slug")({
   loader: async ({ params }) => {
     try {
-      const [modulRes, roadmapRes, chapRes, lessonRes] = await Promise.all([
+      const [modulRes, roadmapRes] = await Promise.all([
         getDetailModul({ data: { slug: params.slug } }),
         getRoadmap(),
-        getDaftarSemuaChapter(),
-        getDaftarSemuaLesson(),
       ]);
 
-      const modul = modulRes.success && modulRes.data ? modulRes.data : null;
+      const modulData = modulRes.success && modulRes.data ? modulRes.data : null;
       const roadmapLevels = roadmapRes.success && roadmapRes.data ? roadmapRes.data : [];
-      const allChapters = chapRes.success && chapRes.data ? chapRes.data : [];
-      const allLessons = lessonRes.success && lessonRes.data ? lessonRes.data : [];
 
-      // Filter chapters & lessons belonging to this module
-      const chapters = allChapters.filter((c: any) => c.moduleId === modul?.id || c.modulId === modul?.id);
-      const lessons = allLessons.filter((l: any) =>
-        chapters.some((c: any) => c.id === l.chapterId)
-      );
+      const chapters = modulData?.chapters || [];
+      const lessons = modulData?.lessons || [];
 
-      return { modul, roadmapLevels, chapters, lessons };
+      return { modul: modulData, roadmapLevels, chapters, lessons };
     } catch {
       return { modul: null, roadmapLevels: [], chapters: [], lessons: [] };
     }
@@ -451,7 +444,8 @@ ATURAN PENTING (MASTER RULE 12):
                             {chapLessons.map((l: any, lIdx: number) => (
                               <Link
                                 key={l.id}
-                                to="/admin/materi"
+                                to="/admin/materi/$slug"
+                                params={{ slug: (l.slug && l.slug !== "undefined") ? l.slug : l.id }}
                                 className="flex items-center justify-between rounded-lg border bg-card p-3 shadow-2xs hover:border-primary/40 hover:bg-muted/30 transition-all group"
                               >
                                 <div className="flex items-center gap-2.5">
@@ -464,9 +458,9 @@ ATURAN PENTING (MASTER RULE 12):
                                   <Badge variant="outline" className="text-[10px] font-bold border-success/40 bg-success/15 text-success">
                                     ● TERBIT
                                   </Badge>
-                                  <Button size="sm" variant="ghost" className="h-7 text-xs font-semibold text-primary">
-                                    <Edit3 className="mr-1 h-3.5 w-3.5" /> Edit Materi
-                                  </Button>
+                                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                                    <Edit3 className="h-3.5 w-3.5" /> Edit Materi
+                                  </span>
                                 </div>
                               </Link>
                             ))}

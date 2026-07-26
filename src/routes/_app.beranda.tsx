@@ -113,12 +113,12 @@ function Beranda() {
               <Progress value={35} className="mt-3 h-2" />
               <div className="mt-4 rounded-xl border bg-muted/30 p-4">
                 <p className="text-xs text-muted-foreground">Topik Pelajaran Berikutnya:</p>
-                <p className="mt-1 text-sm font-semibold">Pengenalan Dasar & Ketentuan Umum Perpajakan</p>
+                <p className="mt-1 text-sm font-semibold">{activeModule.judul || "Pengenalan Dasar & Ketentuan Umum Perpajakan"}</p>
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Estimasi {activeModule.estimasiMenit || 60} menit</span>
                   <Link
-                    to="/belajar/materi/$slug"
-                    params={{ slug: activeModule.slug || "tarif-pph-pasal-17-op" }}
+                    to="/belajar"
+                    search={{ cari: activeModule.judul }}
                     className="flex h-8 items-center gap-1.5 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-semibold hover:bg-secondary/80 transition-colors"
                   >
                     Lanjutkan <ArrowRight className="h-3.5 w-3.5" />
@@ -162,7 +162,7 @@ function Beranda() {
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{m.estimasiMenit || 60} menit</span>
                       <Button asChild size="sm" variant="ghost" className="h-6 text-[11px] px-2">
-                        <Link to="/belajar/materi">Buka Materi</Link>
+                        <Link to="/belajar" search={{ cari: m.judul }}>Buka Materi</Link>
                       </Button>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Lock, CheckCircle2, Star, BookOpen, Layers, Clock, Award, ArrowRight } from "lucide-react";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Lock, CheckCircle2, Star, BookOpen, Layers, Clock, Award, ArrowRight, ArrowLeft } from "lucide-react";
 import { PageHeader, PageBody } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,14 +23,25 @@ export const Route = createFileRoute("/_app/roadmap")({
   },
   head: () => ({
     meta: [
-      { title: "Roadmap Belajar Brevet Realtime — BrevetAI" },
-      { name: "description", content: "Peta perjalanan belajar Brevet Pajak A & B realtime dari database Neon PostgreSQL." },
+      { title: "Roadmap Belajar Brevet — BrevetAI" },
+      { name: "description", content: "Peta perjalanan belajar Brevet Pajak A & B terstruktur dan resmi." },
     ],
   }),
-  component: Roadmap,
+  component: RoadmapLayout,
 });
 
-function Roadmap() {
+function RoadmapLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // If subroute (like /roadmap/materi/$slug) is active, render Outlet!
+  if (pathname !== "/roadmap" && pathname !== "/roadmap/") {
+    return <Outlet />;
+  }
+
+  return <RoadmapTimeline />;
+}
+
+function RoadmapTimeline() {
   const { modules, stats } = Route.useLoaderData();
 
   const totalJam = Math.round((stats.totalEstimasiMenit || 120) / 60);
@@ -38,9 +49,15 @@ function Roadmap() {
   return (
     <>
       <PageHeader
-        title="Roadmap Belajar Brevet Pajak"
-        description="Peta perjalanan belajar interaktif Brevet Pajak A & B — terarah, terstruktur, dan tersinkronisasi realtime."
-        breadcrumb={[{ label: "Beranda", to: "/beranda" }, { label: "Roadmap" }]}
+        title="Roadmap Belajar"
+        description="Kurikulum Brevet Pajak A/B Terstruktur"
+        actions={
+          <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs gap-1.5 border-border hover:bg-accent shrink-0 shadow-2xs">
+            <Link to="/beranda">
+              <ArrowLeft className="h-4 w-4 text-primary" /> Kembali ke Beranda
+            </Link>
+          </Button>
+        }
       />
       <PageBody className="space-y-6">
         {/* Realtime Stats Cards (Smooth Rounded Style) */}
@@ -69,102 +86,89 @@ function Roadmap() {
             <p className="text-xs text-muted-foreground font-mono">Level 12 · 180 XP menuju Level 13</p>
           </div>
 
-          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-xs hover:border-primary/40 transition-all">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-xs hover:border-blue-500/40 transition-all">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
               <span>Estimasi Durasi Belajar</span>
-              <div className="h-8 w-8 grid place-items-center rounded-xl bg-primary/10 text-primary">
+              <div className="h-8 w-8 grid place-items-center rounded-xl bg-blue-500/10 text-blue-400">
                 <Clock className="h-4 w-4" />
               </div>
             </div>
-            <p className="text-3xl font-black text-foreground tracking-tight">± {totalJam || 2} <span className="text-sm font-normal text-muted-foreground">Jam</span></p>
+            <p className="text-3xl font-black text-foreground tracking-tight">± {totalJam || 1} <span className="text-sm font-normal text-muted-foreground">Jam</span></p>
             <p className="text-xs text-muted-foreground font-mono">Total {stats.totalModul} Modul Pembelajaran Aktif</p>
           </div>
         </div>
 
-        {/* Realtime Roadmap Timeline */}
-        {modules.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-card p-12 text-center my-6 shadow-xs">
-            <Layers className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3" />
-            <h3 className="text-base font-bold text-foreground">Belum Ada Modul di Database</h3>
-            <p className="mt-1 text-xs text-muted-foreground max-w-md mx-auto">
-              Silakan tambahkan modul baru melalui menu Admin Modul.
-            </p>
+        {/* Vertical Timeline Stepper Kurikulum Brevet */}
+        <div className="space-y-6 pt-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black tracking-tight text-foreground flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" /> Alur Perjalanan Kurikulum Brevet A/B
+            </h2>
+            <Badge variant="outline" className="font-mono text-xs px-3 py-1 rounded-full border-primary/30 text-primary">
+              Kurikulum Resmi 2026
+            </Badge>
           </div>
-        ) : (
-          <div className="relative pt-2">
-            <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-border sm:left-8" />
-            <ol className="space-y-6">
-              {modules.map((m: any, i: number) => {
-                const locked = m.locked;
-                const done = m.progress === 100;
 
-                return (
-                  <li key={m.id} className="relative pl-14 sm:pl-20">
-                    {/* Circle Node Badge */}
-                    <div
-                      className={
-                        "absolute left-1.5 top-4 grid h-10 w-10 place-items-center rounded-full border-2 sm:left-3 sm:h-11 sm:w-11 font-mono shadow-xs transition-all " +
-                        (locked
-                          ? "border-border bg-muted text-muted-foreground"
-                          : done
-                            ? "border-emerald-500 bg-emerald-500/15 text-emerald-500"
-                            : "border-primary bg-primary/15 text-primary")
-                      }
-                    >
-                      {locked ? (
-                        <Lock className="h-4 w-4" />
-                      ) : done ? (
-                        <CheckCircle2 className="h-5 w-5" />
-                      ) : (
-                        <span className="text-xs font-black">{i + 1}</span>
-                      )}
+          <div className="relative border-l-2 border-primary/20 ml-4 pl-6 sm:pl-8 space-y-8">
+            {modules.map((mod: any, index: number) => {
+              const isFirst = index === 0;
+              const slug = mod.slug || (mod.title ? mod.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : mod.id);
+
+              return (
+                <div key={mod.id || index} className="relative group">
+                  {/* Stepper Dot Circle Indicator */}
+                  <div className="absolute -left-[35px] sm:-left-[43px] top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-background border-2 border-primary text-primary font-bold text-xs shadow-xs group-hover:scale-110 transition-transform">
+                    {isFirst ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    ) : (
+                      <span className="font-mono text-[11px]">{index + 1}</span>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-card p-6 space-y-4 shadow-2xs hover:border-primary/50 transition-all">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="rounded-full text-xs font-mono font-bold border-primary/40 text-primary bg-primary/10 px-3 py-1">
+                          {mod.code || `MODUL-${index + 1}`}
+                        </Badge>
+                        <Badge variant="secondary" className="rounded-full text-xs font-bold px-3 py-1">
+                          {mod.difficulty || "DASAR"}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
+                        <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-primary" /> {mod.duration || "45 menit"}</span>
+                        <span className="flex items-center gap-1"><Award className="h-3.5 w-3.5 text-amber-500" /> +{mod.xpReward || 200} XP</span>
+                      </div>
                     </div>
 
-                    {/* Smooth Rounded Module Card */}
-                    <div className={"rounded-2xl border border-border/80 bg-card p-6 shadow-xs transition-all hover:shadow-md hover:border-primary/50 " + (locked ? "opacity-60" : "")}>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] rounded-full font-mono font-bold px-2.5 py-0.5 border-primary/30 text-primary bg-primary/5">
-                          {m.code}
-                        </Badge>
-                        <Badge variant="secondary" className="text-[10px] rounded-full font-bold px-2.5 py-0.5">
-                          {m.difficulty}
-                        </Badge>
-                        <span className="text-[11px] text-muted-foreground font-mono">
-                          {m.totalLessons} Materi Pelajaran · {m.duration}
-                        </span>
-                        {!locked && (
-                          <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-amber-400 font-bold font-mono bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                            <Star className="h-3 w-3 fill-current text-amber-400" /> +{m.xpReward || 200} XP
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 className="mt-3 text-lg font-bold text-foreground leading-snug">{m.title}</h3>
-                      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed line-clamp-2">{m.description}</p>
-
-                      <div className="mt-4 flex items-center gap-3">
-                        <Progress value={m.progress} className="h-2 flex-1 rounded-full" />
-                        <span className="w-10 text-right text-xs font-mono text-muted-foreground font-bold">{m.progress}%</span>
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-between border-t border-border/40 pt-3.5">
-                        {locked ? (
-                          <span className="text-xs text-muted-foreground italic">Modul dalam draf / belum diterbitkan</span>
-                        ) : (
-                          <Button asChild size="sm" className="font-bold text-xs rounded-xl px-4 shadow-xs">
-                            <Link to="/belajar/materi/$slug" params={{ slug: m.firstLessonSlug || m.slug }}>
-                              {done ? "Ulangi Pelajaran" : "Mulai Belajar Modul"} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-extrabold text-foreground group-hover:text-primary transition-colors">
+                        {mod.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
+                        {mod.description}
+                      </p>
                     </div>
-                  </li>
-                );
-              })}
-            </ol>
+
+                    <div className="pt-2 flex flex-wrap items-center justify-between gap-4 border-t border-border/50">
+                      <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                        <BookOpen className="h-4 w-4 text-primary" />
+                        <span>{mod.totalLessons || 14} Materi Pelajaran</span>
+                      </div>
+
+                      <Button asChild size="sm" className="rounded-xl font-bold text-xs h-9 px-5 shadow-xs">
+                        <Link to="/roadmap/materi/$slug" params={{ slug }}>
+                          {isFirst ? "Ulangi Pelajaran Modul" : "Mulai Belajar Modul"} <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
       </PageBody>
     </>
   );

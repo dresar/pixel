@@ -1,535 +1,400 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useState, useEffect, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 import {
-  Home,
-  Map,
   BookOpen,
-  Sparkles,
-  Trophy,
+  Briefcase,
   Calendar,
-  Bookmark,
-  Highlighter,
-  Layers,
-  ClipboardList,
-  History,
-  Download,
-  BarChart3,
-  Users,
-  Image as ImageIcon,
-  FileJson,
-  Wand2,
-  Settings,
-  Sun,
-  Moon,
-  Menu,
-  ChevronRight,
-  LogOut,
-  Book,
-  Timer,
-  Target,
-  FlaskConical,
-  Shield,
-  Boxes,
   ChevronDown,
+  ChevronRight,
+  Compass,
+  CreditCard,
+  FileCode2,
+  FileQuestion,
+  FileText,
+  Flame,
+  FolderOpen,
+  GraduationCap,
+  HelpCircle,
+  History,
+  Image as ImageIcon,
+  Key,
+  LayoutDashboard,
+  LayoutGrid,
+  Library,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Moon,
+  PanelLeftClose,
+  PenTool,
+  Search,
+  Settings,
+  Sparkles,
+  Sun,
+  Trophy,
+  User,
+  Users,
+  X,
+  ArrowLeft,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useTheme } from "@/lib/theme";
+import { ReactNode, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { currentUser } from "@/lib/dummy";
+import { cn } from "@/lib/utils";
 
-type NavItem = { to: string; label: string; icon: any; badge?: string };
-
-// Student Navigation
-const mainNav: NavItem[] = [
-  { to: "/beranda", label: "Beranda", icon: Home },
-  { to: "/roadmap", label: "Roadmap", icon: Map },
-  { to: "/belajar", label: "Belajar", icon: BookOpen },
-  { to: "/ai/chat", label: "Tanya AI", icon: Sparkles, badge: "Baru" },
-  { to: "/kuis", label: "Kuis", icon: ClipboardList },
-  { to: "/kartu", label: "Kartu Belajar", icon: Layers },
-];
-
-const libraryNav: NavItem[] = [
-  { to: "/glosarium", label: "Glosarium", icon: Book },
-  { to: "/referensi", label: "Referensi UU", icon: FileJson },
-  { to: "/tersimpan", label: "Tersimpan", icon: Bookmark },
-  { to: "/sorotan", label: "Sorotan", icon: Highlighter },
-  { to: "/riwayat", label: "Riwayat", icon: History },
-  { to: "/unduhan", label: "Unduhan", icon: Download },
-];
-
-const progressNav: NavItem[] = [
-  { to: "/progres", label: "Progres Belajar", icon: BarChart3 },
-  { to: "/pencapaian", label: "Pencapaian", icon: Trophy },
-  { to: "/peringkat", label: "Leaderboard", icon: Users },
-  { to: "/kalender", label: "Kalender", icon: Calendar },
-  { to: "/rencana", label: "Rencana Belajar", icon: Target },
-  { to: "/pomodoro", label: "Timer Pomodoro", icon: Timer },
-];
-
-// Admin Navigation
-const adminNav: NavItem[] = [
-  { to: "/admin/dashboard", label: "Dashboard Admin", icon: Shield },
-  { to: "/admin/modul", label: "Kelola Modul", icon: Boxes },
-  { to: "/admin/materi", label: "Kelola Materi", icon: BookOpen },
-  { to: "/admin/kuis", label: "Kelola Kuis", icon: ClipboardList },
-  { to: "/admin/key", label: "Gemini Keys", icon: Wand2, badge: "API" },
-  { to: "/admin/gambar", label: "Media", icon: ImageIcon },
-  { to: "/admin/pengguna", label: "Pengguna", icon: Users },
-  { to: "/admin/pengaturan", label: "Pengaturan", icon: Settings },
-];
-
-// Prompt Studio Sub-Navigation
-const promptStudioNav: NavItem[] = [
-  { to: "/admin/prompt-studio", label: "Engine Manager", icon: Sparkles },
-  { to: "/admin/prompt-studio/compiler", label: "Prompt Compiler", icon: FlaskConical },
-];
-
-function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  return (
-    <ul className="space-y-0.5">
-      {items.map((item) => {
-        const hasMoreSpecificMatch = items.some(
-          (other) =>
-            other.to !== item.to &&
-            other.to.length > item.to.length &&
-            (pathname === other.to || (other.to !== "/" && pathname.startsWith(other.to + "/")))
-        );
-
-        const active =
-          (pathname === item.to ||
-            (item.to !== "/" && pathname.startsWith(item.to + "/") && !hasMoreSpecificMatch)) ||
-          (item.to === "/admin/dashboard" && (pathname === "/admin" || pathname === "/admin/"));
-        const Icon = item.icon;
-        return (
-          <li key={item.to}>
-            <Link
-              to={item.to}
-              onClick={onNavigate}
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-xs font-semibold"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-              <span className="truncate">{item.label}</span>
-              {item.badge && (
-                <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-[10px]">
-                  {item.badge}
-                </Badge>
-              )}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
-  );
+// ── TIPE NAVIGASI ────────────────────────────────────────────────────────────
+interface NavItem {
+  label: string;
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  badgeVariant?: "default" | "secondary" | "destructive" | "outline";
 }
 
-function AdminSidebarInner({ onNavigate }: { onNavigate?: () => void }) {
-  return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Header (Fixed) */}
-      <div className="shrink-0 flex items-center justify-between px-4 py-5 border-b mb-2">
-        <div className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl shadow-sm bg-destructive text-destructive-foreground">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold tracking-tight">Admin Control Panel</p>
-            <p className="truncate text-[11px] text-muted-foreground">Kelola Platform Pajak</p>
-          </div>
-        </div>
-        <Badge variant="destructive" className="text-[9px] uppercase px-1.5 py-0.5 font-mono">
-          ADMIN
-        </Badge>
-      </div>
-
-      {/* Navigation list (Independently Scrollable) */}
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
-        <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-destructive">
-            Navigasi Admin Panel
-          </p>
-          <NavList items={adminNav} onNavigate={onNavigate} />
-        </div>
-        <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-primary">
-            Prompt Studio
-          </p>
-          <NavList items={promptStudioNav} onNavigate={onNavigate} />
-        </div>
-      </nav>
-
-      {/* Profile Footer (Fixed) */}
-      <div className="shrink-0 border-t p-3 bg-sidebar">
-        <Link
-          to="/admin/pengaturan"
-          onClick={onNavigate}
-          className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-              {currentUser.avatarInitials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{currentUser.name}</p>
-            <p className="truncate text-[11px] text-muted-foreground">Administrator</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      </div>
-    </div>
-  );
+interface NavGroup {
+  title: string;
+  items: NavItem[];
 }
 
-function StudentMobileMenuInner({ onNavigate }: { onNavigate?: () => void }) {
-  return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-5 border-b mb-2">
-        <div className="grid h-9 w-9 place-items-center rounded-xl shadow-sm bg-primary text-primary-foreground">
-          <Sparkles className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold tracking-tight">BrevetAI</p>
-          <p className="truncate text-[11px] text-muted-foreground">Belajar Brevet Pajak A & B</p>
-        </div>
-      </div>
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
-        <div>
-          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Utama
-          </p>
-          <NavList items={mainNav} onNavigate={onNavigate} />
-        </div>
-        <div>
-          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Pustaka
-          </p>
-          <NavList items={libraryNav} onNavigate={onNavigate} />
-        </div>
-        <div>
-          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Progres
-          </p>
-          <NavList items={progressNav} onNavigate={onNavigate} />
-        </div>
-      </nav>
-      <div className="shrink-0 border-t p-3 bg-sidebar">
-        <Link
-          to="/pengaturan"
-          onClick={onNavigate}
-          className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-              {currentUser.avatarInitials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{currentUser.name}</p>
-            <p className="truncate text-[11px] text-muted-foreground">{currentUser.role}</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      </div>
-    </div>
-  );
-}
+// ── GRUP NAVIGASI UTAMA (STUDENT/USER) ───────────────────────────────────────
+const studentNavGroups: NavGroup[] = [
+  {
+    title: "PEMBELAJARAN",
+    items: [
+      { label: "Beranda", to: "/beranda", icon: LayoutDashboard },
+      { label: "Roadmap Kurikulum", to: "/roadmap", icon: Compass, badge: "UTAMA" },
+      { label: "Modul & Materi", to: "/belajar", icon: BookOpen },
+      { label: "Kuis & Evaluasi", to: "/kuis", icon: FileQuestion },
+      { label: "Studi Kasus & Simulasi", to: "/studi-kasus", icon: PenTool },
+    ],
+  },
+  {
+    title: "ASISTEN AI & PERALATAN",
+    items: [
+      { label: "Tanya AI Asisten", to: "/ai/chat", icon: Sparkles, badge: "AI" },
+      { label: "AI Jelaskan Pasal", to: "/ai/jelaskan", icon: FileText },
+      { label: "Catatan AI", to: "/ai/catatan", icon: History },
+      { label: "Referensi Hukum", to: "/referensi", icon: Library },
+      { label: "Glosarium Pajak", to: "/glosarium", icon: FolderOpen },
+    ],
+  },
+  {
+    title: "PROGRES & KOMUNITAS",
+    items: [
+      { label: "Progres Belajar", to: "/progres", icon: Trophy },
+      { label: "Peringkat (Leaderboard)", to: "/peringkat", icon: Flame },
+      { label: "Kartu Belajar", to: "/kartu", icon: CreditCard },
+      { label: "Kalender Pajak", to: "/kalender", icon: Calendar },
+    ],
+  },
+];
 
-function ThemeToggle() {
-  const { theme, toggle } = useTheme();
-  return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label="Ganti tema" className="rounded-lg">
-      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    </Button>
-  );
-}
-
-function UserMenu() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isAdminArea = pathname.startsWith("/admin");
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="gap-2 px-2">
-          <Avatar className="h-7 w-7">
-            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-              {currentUser.avatarInitials}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden text-xs font-medium sm:inline">{currentUser.name}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel className="font-normal">
-          <p className="text-xs font-semibold">{currentUser.name}</p>
-          <p className="text-[11px] text-muted-foreground">{currentUser.email}</p>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {isAdminArea ? (
-          <>
-            <DropdownMenuItem asChild>
-              <Link to="/admin/pengaturan">Pengaturan Admin</Link>
-            </DropdownMenuItem>
-          </>
-        ) : (
-          <>
-            <DropdownMenuItem asChild>
-              <Link to="/profil">Profil Saya</Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem asChild>
-              <Link to="/pengaturan">Pengaturan Akun</Link>
-            </DropdownMenuItem>
-          </>
-        )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className="text-destructive">
-          <Link to="/masuk">
-            <LogOut className="mr-2 h-3.5 w-3.5" /> Keluar
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+// ── GRUP NAVIGASI ADMIN PANEL ────────────────────────────────────────────────
+const adminNavGroups: NavGroup[] = [
+  {
+    title: "RINGKASAN & ANALITIK",
+    items: [
+      { label: "Dashboard Admin", to: "/admin/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: "MANAJEMEN KONTEN BREVET",
+    items: [
+      { label: "Modul Kurikulum", to: "/admin/modul", icon: BookOpen },
+      { label: "Materi & Bab", to: "/admin/materi", icon: FileText },
+      { label: "Bank Kuis & Evaluasi", to: "/admin/kuis", icon: FileQuestion },
+      { label: "Studi Kasus & Simulasi", to: "/admin/studi-kasus", icon: Briefcase },
+      { label: "Galeri Gambar & Visual", to: "/admin/gambar", icon: ImageIcon },
+      { label: "Referensi Hukum & UU", to: "/admin/referensi", icon: Library },
+      { label: "Glosarium Istilah", to: "/admin/glosarium", icon: FolderOpen },
+    ],
+  },
+  {
+    title: "STUDIO INTELIJEN AI",
+    items: [
+      { label: "Studio Asisten AI", to: "/admin/prompt-studio", icon: FileCode2, badge: "AI" },
+      { label: "Kunci Akses Asisten AI", to: "/admin/key", icon: Key },
+    ],
+  },
+  {
+    title: "PENGGUNA & PENGATURAN",
+    items: [
+      { label: "Manajemen Pengguna", to: "/admin/pengguna", icon: Users },
+      { label: "Pengaturan Sistem", to: "/admin/pengaturan", icon: Settings },
+    ],
+  },
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isAdminArea = pathname.startsWith("/admin");
+  const navigate = useNavigate();
+  const { data: session } = useSession();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarHidden, setSidebarHidden] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  const isAdmin = pathname.startsWith("/admin");
+  const navGroups = isAdmin ? adminNavGroups : studentNavGroups;
+  const userRole = (session?.user as any)?.role || "STUDENT";
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "dark" | "light" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/sign-out", { method: "POST" });
+      window.location.href = "/masuk";
+    } catch {
+      window.location.href = "/masuk";
+    }
+  };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Admin Panel Desktop Sidebar (Only visible in /admin routes) */}
-      {isAdminArea && (
-        <aside className="hidden w-64 shrink-0 border-r bg-sidebar md:block sticky top-0 h-screen overflow-hidden">
-          <AdminSidebarInner />
-        </aside>
-      )}
+    <div className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground">
+      {/* ── 1. FIXED TOP HEADER NAVBAR (TOGGLE BUTTON UNTUK SIDEBAR & LOGO & TITLE) ── */}
+      <header className="h-14 shrink-0 z-30 flex items-center justify-between border-b border-border/80 bg-card/90 px-3 sm:px-6 backdrop-blur-md">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          {/* Tombol Mobile Menu */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground shrink-0"
+            aria-label="Buka Menu Navigasi"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
 
-      {/* Main Layout Area */}
-      <div className="flex flex-1 flex-col min-w-0">
-        {/* Top Navbar */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/90 px-4 backdrop-blur-md sm:px-6">
-          <div className="flex items-center gap-4 min-w-0">
-            {/* Mobile Hamburger Drawer */}
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0 bg-sidebar">
-                {isAdminArea ? (
-                  <AdminSidebarInner onNavigate={() => setOpen(false)} />
-                ) : (
-                  <StudentMobileMenuInner onNavigate={() => setOpen(false)} />
-                )}
-              </SheetContent>
-            </Sheet>
+          {/* Tombol Toggle Sembunyikan / Tampilkan Sidebar Desktop */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarHidden(!sidebarHidden)}
+            className="hidden lg:flex h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground shrink-0"
+            title={sidebarHidden ? "Tampilkan Sidebar Navigasi" : "Sembunyikan Sidebar Navigasi"}
+          >
+            <PanelLeftClose className={cn("h-5 w-5 transition-transform duration-300", sidebarHidden && "rotate-180")} />
+          </Button>
 
-            {/* Student Top Header Branding & Compact Navigation Dropdown (Desktop Only) */}
-            {!isAdminArea && (
-              <div className="flex items-center gap-6">
-                <Link to="/beranda" className="flex items-center gap-2 text-primary font-bold">
-                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-xs">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                  <span className="text-base tracking-tight text-foreground font-extrabold hidden sm:inline">
-                    BrevetAI
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <div className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl bg-gradient-to-br from-primary via-blue-600 to-amber-500 text-white font-black text-xs sm:text-sm shadow-md group-hover:scale-105 transition-transform">
+              B
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-xs sm:text-base tracking-tight leading-none text-foreground flex items-center gap-1.5">
+                BrevetAI <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 border-primary/30 text-primary hidden sm:inline-flex">Resmi</Badge>
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono leading-none mt-0.5 hidden sm:block">
+                Platform Edukasi Brevet Pajak A/B
+              </span>
+            </div>
+          </Link>
+
+          {/* PORTAL CONTAINER UNTUK JUDUL TERLETAK DI SAMPING LOGO */}
+          <div id="top-header-portal" className="ml-3 pl-3 border-l border-border/60 flex items-center min-w-0 font-extrabold text-xs sm:text-sm text-foreground truncate max-w-[200px] sm:max-w-xs md:max-w-sm shrink-0" />
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2">
+          {userRole === "ADMIN" && (
+            <Button
+              asChild
+              size="sm"
+              variant={isAdmin ? "default" : "outline"}
+              className="h-8 rounded-xl text-xs font-bold gap-1.5 px-2.5 sm:px-3"
+            >
+              <Link to={isAdmin ? "/beranda" : "/admin/dashboard"}>
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">{isAdmin ? "Modus Siswa" : "Admin Panel"}</span>
+              </Link>
+            </Button>
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl text-muted-foreground hover:text-foreground"
+            title="Ganti Tema"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+          </Button>
+
+          {session?.user ? (
+            <div className="flex items-center gap-1.5 sm:gap-2 pl-1.5 sm:pl-2 border-l border-border/60">
+              <Link to="/profil" className="flex items-center gap-2 group">
+                <Avatar className="h-8 w-8 rounded-xl border border-primary/30 group-hover:border-primary transition-colors">
+                  <AvatarImage src={session.user.image || ""} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
+                    {session.user.name?.slice(0, 2).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden lg:flex flex-col text-left">
+                  <span className="text-xs font-bold text-foreground truncate max-w-[100px]">
+                    {session.user.name || "Pengguna"}
                   </span>
-                </Link>
+                  <span className="text-[9px] text-muted-foreground font-mono">
+                    {userRole === "ADMIN" ? "Administrator" : "Siswa Brevet"}
+                  </span>
+                </div>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                title="Keluar"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button asChild size="sm" className="rounded-xl font-bold text-xs h-8 px-3 sm:px-4 bg-primary text-primary-foreground">
+              <Link to="/masuk">Masuk</Link>
+            </Button>
+          )}
+        </div>
+      </header>
 
-                {/* Compact Top Navigation Links */}
-                <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-                  <Link
-                    to="/beranda"
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold",
-                      pathname === "/beranda"
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    Beranda
-                  </Link>
+      {/* ── 2. VIEWPORT CONTENT WRAPPER ── */}
+      <div className="flex-1 flex min-w-0 overflow-hidden relative">
+        {/* ── SIDEBAR DRAWER OVERLAY (MOBILE) ── */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden animate-in fade-in"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-                  <Link
-                    to="/roadmap"
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold",
-                      pathname === "/roadmap"
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    Roadmap
-                  </Link>
+        {/* ── 3. COLLAPSIBLE SIDEBAR NAVIGATION (DESKTOP HIDDEN TOGGLEABLE) ── */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 border-r border-border/80 bg-card/95 backdrop-blur-md flex flex-col transition-all duration-300 lg:static lg:translate-x-0 shrink-0 h-full overflow-y-auto",
+            sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0",
+            sidebarHidden ? "lg:w-0 lg:p-0 lg:border-r-0 lg:opacity-0 pointer-events-none overflow-hidden" : "lg:w-64"
+          )}
+        >
+          <div className="h-14 flex items-center justify-between px-4 border-b border-border/60 lg:hidden">
+            <span className="font-extrabold text-sm text-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Menu Navigasi
+            </span>
+            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="h-8 w-8 rounded-xl">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-                  <Link
-                    to="/belajar"
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold",
-                      pathname === "/belajar" || pathname.startsWith("/belajar/")
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    Belajar
-                  </Link>
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {navGroups.map((group, gIdx) => (
+              <div key={gIdx} className="space-y-1.5">
+                <span className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 font-mono">
+                  {group.title}
+                </span>
+                <div className="space-y-1 pt-1">
+                  {group.items.map((item, iIdx) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.to || (item.to !== "/beranda" && item.to !== "/admin/dashboard" && pathname.startsWith(item.to));
 
-                  <Link
-                    to="/ai/chat"
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold",
-                      pathname === "/ai/chat"
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    <Sparkles className="h-3.5 w-3.5 text-primary" /> Tanya AI
-                  </Link>
+                    return (
+                      <Link
+                        key={iIdx}
+                        to={item.to}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          "flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold transition-all group",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        )}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Icon className={cn("h-4 w-4 shrink-0 transition-transform group-hover:scale-110", isActive ? "text-primary-foreground" : "text-primary")} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
 
-                  {/* Single Clean Dropdown for All Extra Learning Tools */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
-                        Pustaka & Fitur <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48">
-                      <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Pustaka Pajak
-                      </DropdownMenuLabel>
-                      <DropdownMenuItem asChild>
-                        <Link to="/glosarium" className="flex items-center gap-2">
-                          <Book className="h-4 w-4 text-primary" /> Glosarium Pajak
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/referensi" className="flex items-center gap-2">
-                          <FileJson className="h-4 w-4 text-primary" /> Referensi UU
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Latihan & Progres
-                      </DropdownMenuLabel>
-                      <DropdownMenuItem asChild>
-                        <Link to="/kuis" className="flex items-center gap-2">
-                          <ClipboardList className="h-4 w-4 text-primary" /> Kuis Interaktif
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/kartu" className="flex items-center gap-2">
-                          <Layers className="h-4 w-4 text-primary" /> Kartu Belajar
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/progres" className="flex items-center gap-2">
-                          <BarChart3 className="h-4 w-4 text-primary" /> Progres Belajar
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </nav>
+                        {item.badge && (
+                          <Badge
+                            variant={item.badgeVariant || (isActive ? "secondary" : "outline")}
+                            className="text-[9px] font-mono font-bold px-1.5 py-0 rounded-md shrink-0"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            )}
+            ))}
           </div>
 
-          {/* PORTAL TARGET FOR PAGE HEADER */}
-          <div id="top-header-portal" className="flex-1 flex items-center justify-end md:justify-between min-w-0 px-2 sm:px-4" />
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <div className="h-4 w-px bg-border" />
-            <UserMenu />
+          <div className="p-4 border-t border-border/60 bg-muted/20 text-[11px] text-muted-foreground space-y-2">
+            <div className="flex items-center justify-between font-mono text-[10px]">
+              <span>Kurikulum 2026</span>
+              <span className="text-emerald-400 font-bold">UU HPP & PMK 168</span>
+            </div>
+            <p className="text-[10px] leading-normal text-muted-foreground/80">
+              Hak Cipta © 2026 BrevetAI. Seluruh Hak Dilindungi.
+            </p>
           </div>
-        </header>
+        </aside>
 
-        {/* Page Content */}
-        <main className="flex-1 min-w-0 overflow-y-auto">{children}</main>
+        {/* ── 4. MAIN CONTENT AREA (SCROLLABLE, CLEAN FULL HEIGHT) ── */}
+        <main className="flex-1 min-w-0 flex flex-col overflow-y-auto h-full relative">
+          {children}
+        </main>
       </div>
     </div>
   );
 }
 
+// ── PAGE HEADER (PURE TRANSPARENT FLOATING PILL OVERLAY, ZERO BLACK BAR, ZERO CARD BACKGROUND) ─────
 export function PageHeader({
   title,
   description,
-  breadcrumb,
   actions,
 }: {
-  title: string;
+  title?: string;
   description?: string;
   breadcrumb?: { label: string; to?: string }[];
   actions?: ReactNode;
 }) {
-  const [portalTarget, setPortalTarget] = useState<Element | null>(null);
+  const [headerTitlePortal, setHeaderTitlePortal] = useState<Element | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
 
   useEffect(() => {
-    setPortalTarget(document.getElementById("top-header-portal"));
+    setHeaderTitlePortal(document.getElementById("top-header-portal"));
   }, []);
-
-  // Bagian 1: Judul & Deskripsi di-render ke Top Navbar HANYA untuk Admin Panel
-  const headerContent = isAdmin ? (
-    <div className="hidden sm:flex flex-col min-w-0 justify-center pl-1">
-      <h1 className="text-sm font-bold tracking-tight truncate text-foreground">{title}</h1>
-      {description && <span className="text-[10px] text-muted-foreground truncate hidden lg:block">{description}</span>}
-    </div>
-  ) : null;
 
   return (
     <>
-      {portalTarget && createPortal(headerContent, portalTarget)}
+      {/* Judul portaled into top header navbar next to logo */}
+      {headerTitlePortal && title && !isAdmin && createPortal(
+        <span className="truncate font-extrabold text-xs sm:text-sm text-foreground tracking-tight">{title}</span>,
+        headerTitlePortal
+      )}
 
-      {/* Bagian 2: Breadcrumb & Actions (Dirender di bawah Header) */}
-      {(breadcrumb || actions) && (
-        <div className="border-b bg-background/60 px-4 py-3 sm:px-6">
-          <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              {breadcrumb && breadcrumb.length > 0 && (
-                <nav className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
-                  {breadcrumb.map((b, i) => (
-                    <div key={i} className="flex items-center gap-1.5 truncate">
-                      {i > 0 && <ChevronRight className="h-3 w-3 shrink-0" />}
-                      {b.to ? (
-                        <Link to={b.to} className="hover:text-foreground font-medium truncate">{b.label}</Link>
-                      ) : (
-                        <span className="font-medium text-foreground truncate">{b.label}</span>
-                      )}
-                    </div>
-                  ))}
-                </nav>
-              )}
-            </div>
-
-            {actions && (
-              <div className="flex shrink-0 items-center gap-2">
-                {actions}
-              </div>
-            )}
+      {/* PURE TRANSPARENT FLOATING PILL BUTTONS (NO FULL WIDTH BAR, NO BACKGROUND BOX) */}
+      {actions && (
+        <div className="sticky top-2 z-30 flex items-center justify-end pointer-events-none mb-0 -mt-1">
+          <div className="pointer-events-auto flex items-center gap-2 shrink-0 ml-auto bg-card/85 backdrop-blur-md p-1 rounded-full border border-border/50 shadow-md">
+            {actions}
           </div>
         </div>
       )}
@@ -538,5 +403,5 @@ export function PageHeader({
 }
 
 export function PageBody({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("mx-auto max-w-7xl p-4 sm:p-6", className)}>{children}</div>;
+  return <div className={cn("p-4 sm:p-6 pt-3 sm:pt-4", className)}>{children}</div>;
 }

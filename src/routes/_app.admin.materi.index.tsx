@@ -203,18 +203,11 @@ function AdminMateriGridPage() {
         description="Kelola materi edukasi perpajakan Brevet A/B, kelola gambar Cloudinary, dan hasilkan prompt gambar AI dengan Gemini."
         breadcrumb={[{ label: "Admin", to: "/admin/dashboard" }, { label: "Materi" }]}
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild className="font-bold text-xs shadow-2xs rounded-none">
-              <Link to="/admin/gambar">
-                <Cloud className="mr-1.5 h-3.5 w-3.5 text-primary" /> Pustaka Cloudinary
-              </Link>
-            </Button>
-            <Button size="sm" asChild className="font-bold text-xs shadow-xs rounded-none">
-              <Link to="/admin/modul">
-                <Layers className="mr-1.5 h-4 w-4" /> Kelola via Modul
-              </Link>
-            </Button>
-          </div>
+          <Button size="sm" asChild className="font-bold text-xs shadow-xs rounded-none">
+            <Link to="/admin/modul">
+              <Layers className="mr-1.5 h-4 w-4" /> Kelola via Modul
+            </Link>
+          </Button>
         }
       />
 

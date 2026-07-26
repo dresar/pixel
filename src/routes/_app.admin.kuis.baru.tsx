@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Save,
   Upload,
+  BookOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDaftarModul, getDaftarSemuaChapter, getDaftarSemuaLesson } from "@/functions/modules";
 import { buatKuisAdmin, imporKuisLengkapAdmin } from "@/functions/quiz";
@@ -62,7 +62,7 @@ export const Route = createFileRoute("/_app/admin/kuis/baru")({
   head: () => ({
     meta: [
       { title: "AI Generator & Kuis Baru — Admin BrevetAI" },
-      { name: "description", content: "Generator prompt AI kuis dan pembuat kuis evaluasi baru tanpa modal." },
+      { name: "description", content: "Generator prompt AI kuis berbasis Materi Pembelajaran tanpa modal." },
     ],
   }),
   component: KelolaKuisBaruPage,
@@ -75,8 +75,11 @@ function KelolaKuisBaruPage() {
   // Tab State: Default to AI Generator Tab
   const [activeTab, setActiveTab] = useState("ai");
 
-  // Form Fields (Manual)
+  // Selection: Focus on MATERI (Lesson)
+  const [selectedLessonId, setSelectedLessonId] = useState<string>(lessonsList[0]?.id || "");
   const [selectedModuleId, setSelectedModuleId] = useState<string>(modulesList[0]?.id || "UMUM");
+
+  // Form Fields (Manual)
   const [judulBaru, setJudulBaru] = useState("");
   const [deskripsiBaru, setDeskripsiBaru] = useState("");
   const [waktuBaru, setWaktuBaru] = useState("20");
@@ -86,7 +89,6 @@ function KelolaKuisBaruPage() {
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // AI Prompt Generator State
-  const [aiSelectedModuleId, setAiSelectedModuleId] = useState<string>(modulesList[0]?.id || "");
   const [generatedPromptText, setGeneratedPromptText] = useState("");
   const [copiedPrompt, setCopiedPrompt] = useState(false);
 
@@ -94,73 +96,85 @@ function KelolaKuisBaruPage() {
   const [jsonImportText, setJsonImportText] = useState("");
   const [isImporting, setIsImporting] = useState(false);
 
-  // Generate Ultimate Master Claude AI Quiz Prompt (Aggregates Module, Chapters, and Lessons)
-  const handleGeneratePrompt = () => {
-    const mod = modulesList.find((m: any) => m.id === aiSelectedModuleId) || modulesList[0];
-    if (!mod) return;
+  // Handle select lesson and auto fill info
+  const handleSelectLesson = (lessonId: string) => {
+    setSelectedLessonId(lessonId);
+    const les = lessonsList.find((l: any) => l.id === lessonId);
+    if (les) {
+      setJudulBaru(`Kuis Evaluasi: ${les.judul}`);
+      setDeskripsiBaru(`Kuis evaluasi pemahaman materi perpajakan: ${les.judul}`);
+    }
+  };
 
-    // Aggregate chapters & lessons for this module
-    const modChapters = chaptersList.filter((c: any) => c.moduleId === mod.id);
-    let hierarchyText = "";
+  // Generate Ultimate Master Claude AI Quiz Prompt (Full Module Context + Locked Target Lesson Focus)
+  const handleGeneratePrompt = () => {
+    const lesson = lessonsList.find((l: any) => l.id === selectedLessonId) || lessonsList[0];
+    const chapter = lesson ? chaptersList.find((c: any) => c.id === lesson.chapterId) : null;
+    const moduleItem = chapter ? modulesList.find((m: any) => m.id === chapter.moduleId) : modulesList[0];
+
+    const lessonTitle = lesson?.judul || "Materi Perpajakan Brevet";
+    const chapterTitle = chapter?.judul || "Bab Pelajaran";
+    const moduleTitle = moduleItem?.judul || "Modul Brevet Pajak A & B";
+
+    // Aggregasi seluruh Bab & Materi dalam Modul ini dari Database Neon untuk Konteks AI Utuh
+    const modChapters = chaptersList.filter((c: any) => c.moduleId === moduleItem?.id);
+    let fullModuleHierarchy = "";
 
     if (modChapters.length > 0) {
       modChapters.forEach((ch: any, cIdx: number) => {
-        hierarchyText += `\nBab ${cIdx + 1}: ${ch.judul}\n`;
-        if (ch.deskripsi) hierarchyText += `  Deskripsi Bab: ${ch.deskripsi}\n`;
+        fullModuleHierarchy += `\n📌 BAB ${cIdx + 1}: ${ch.judul}\n`;
+        if (ch.deskripsi) fullModuleHierarchy += `   Deskripsi Bab: ${ch.deskripsi}\n`;
 
         const chapLessons = lessonsList.filter((l: any) => l.chapterId === ch.id);
         chapLessons.forEach((l: any, lIdx: number) => {
-          hierarchyText += `  - Materi ${lIdx + 1}: ${l.judul}\n`;
+          const isTarget = l.id === lesson?.id;
+          fullModuleHierarchy += `   ${isTarget ? "🎯 [TARGET FOKUS KUIS SEKARANG] " : "  - "}Materi ${lIdx + 1}: ${l.judul}\n`;
         });
       });
     } else {
-      hierarchyText = "(Gunakan cakupan materi umum modul ini)";
+      fullModuleHierarchy = "(Seluruh cakupan materi dalam modul)";
     }
 
-    const fullPrompt = `[SYSTEM INSTRUCTION & MASTER QUIZ PROMPT]
+    const fullPrompt = `[SYSTEM INSTRUCTION & MASTER QUIZ PROMPT BERBASIS KONTEKS UTUH MODUL & KUNCI MATERI]
 Anda adalah Ahli Pembuat Soal Ujian Perpajakan (Brevet A & B) dan Konsultan Pajak Senior di BrevetAI.
 
-TUGAS UTAMA ANDA:
-Lakukan analisis mendalam terhadap seluruh struktur kurikulum dan materi pembelajaran berikut:
+KONTEKS UTUH MODUL & BAB PEMBELAJARAN (UNTUK ACUAN PEMAHAMAN AI):
+- Modul Utama: "${moduleTitle}" (${moduleItem?.deskripsi || 'Kurikulum Brevet Pajak A & B.'})
+- Struktur Seluruh Bab & Materi dalam Modul Ini:
+${fullModuleHierarchy}
 
-MODUL PEMBELAJARAN:
-Judul Modul: "${mod.judul}"
-Deskripsi Modul: "${mod.deskripsi || 'Materi perpajakan resmi Brevet A & B sesuai UU HPP.'}"
-Tingkat Kesulitan: ${mod.tingkatKesulitan || 'DASAR'}
+🎯 TARGET KUNCI FOKUS SOAL (DILOCK KHUSUS UNTUK MATERI INI):
+- TARGET MATERI FOKUS: "${lessonTitle}"
+- BAB INDUK MATERI: "${chapterTitle}"
 
-DAFTAR BAB & MATERI DALAM MODUL INI:
-${hierarchyText}
-
-INSTRUKSI PENYUSUNAN SOAL UJIAN KUIS:
-1. Susunlah 10 - 15 Soal Kuis Evaluasi Ujian Pilihan Ganda (4 Opsi: A, B, C, D) yang SANGAT MENDALAM dan BERKUALITAS TINGGI.
-2. Soal harus mencakup studi kasus dunia nyata, perhitungan matematika pajak (seperti TER PPh 21, PPh Badan, PTKP, PPN 11%-12%), dan landasan hukum UU HPP No. 7/2021, PP 55/2022, PMK 168/2023, serta sistem Coretax DJP.
-3. Setiap soal WAJIB memiliki kunci jawaban tepat 1 (isBenar: true) dan pembahasan teoretis/hukum yang jelas.
-
-ATURAN KHUSUS DIAGRAM & GAMBAR VISUAL (PROMPT GAMBAR):
-Jika suatu soal membutuhkan gambar/diagram pendukung (misalnya alur sistem Coretax, format e-Faktur, formulir SPT, atau alur pemotongan pajak), sertakan properti "promptGambar" yang berisi deskripsi prompt gambar bahasa Inggris yang detail agar admin dapat meng-generate gambar pendukung melalui AI Image Generator.
+INSTRUKSI PENYUSUNAN SOAL UJIAN KUIS MATERI:
+1. Pahami seluruh konteks alur modul di atas, namun KUNCI FOKUS PEMBUATAN SOAL HANYA UNTUK MATERI TERPILIH: "${lessonTitle}".
+2. Susunlah 10 - 15 Soal Kuis Evaluasi Ujian Pilihan Ganda (4 Opsi: A, B, C, D) & Esai Perhitungan yang SANGAT MENDALAM tentang "${lessonTitle}".
+3. Soal harus mencakup studi kasus perpajakan nyata, pasal-pasal UU HPP, PMK 168/2023, PP 55/2022, serta simulasi pemotongan pajak / Coretax DJP.
+4. Setiap soal WAJIB memiliki kunci jawaban (isBenar: true) dan penjelasan teoretis/dasar hukum yang jelas.
+5. Jika ada soal studi kasus perincian hitungan, sertakan "promptGambar" (deskripsi gambar bahasa Inggris) untuk menghasilkan grafik/tabel pendukung di DALL-E/ChatGPT.
 
 ATURAN WAJIB OUTPUT CLAUDE ARTIFACT / CANVAS:
-1. Hasilkan seluruh output dalam bentuk **Claude Artifact / Canvas (JSON File)** agar pengguna dapat langsung mengunduhnya atau menyalinnya secara utuh.
-2. Output WAJIB 100% VALID JSON MURNI tanpa teks pembuka atau penutup di luar JSON.
+Hasilkan seluruh output dalam bentuk **Claude Artifact / Canvas (JSON File)** 100% VALID JSON MURNI tanpa teks di luar JSON.
 
-SKEMA STRUCTURE JSON ARTIFACT KUIS:
+SKEMA STRUCTURE JSON ARTIFACT KUIS MATERI:
 {
-  "judul": "Kuis Evaluasi: ${mod.judul}",
-  "deskripsi": "Ujian kompetensi perpajakan Brevet A/B untuk modul ${mod.judul}.",
+  "judul": "Kuis Evaluasi: ${lessonTitle}",
+  "deskripsi": "Ujian kompetensi materi ${lessonTitle} pada ${moduleTitle}.",
   "batasWaktuMenit": 20,
   "nilaiMinimumLulus": 70,
   "pertanyaan": [
     {
-      "teksPertanyaan": "Berapa PPh Pasal 21 terutang bulan Januari untuk Karyawan A jika...",
+      "teksPertanyaan": "Berdasarkan materi ${lessonTitle}, tentukan besarnya PPh terutang jika...",
       "tipeSoal": "PILIHAN_GANDA",
-      "pembahasan": "Sesuai PMK 168/2023 TER Kategori A tarif 1.5% x Rp 7.500.000 = Rp 112.500...",
-      "promptGambar": "A detailed professional diagram showing tax withholding calculation flow for PPh 21 TER Category A in Indonesia",
+      "pembahasan": "Penjelasan hukum dan perhitungan...",
+      "promptGambar": "A clear taxation infographic diagram...",
       "urutan": 1,
       "opsi": [
-        { "kode": "A", "teks": "Rp 112.500", "isBenar": true },
-        { "kode": "B", "teks": "Rp 150.000", "isBenar": false },
-        { "kode": "C", "teks": "Rp 200.000", "isBenar": false },
-        { "kode": "D", "teks": "Rp 75.000", "isBenar": false }
+        { "kode": "A", "teks": "Rp 500.000", "isBenar": true },
+        { "kode": "B", "teks": "Rp 750.000", "isBenar": false },
+        { "kode": "C", "teks": "Rp 1.000.000", "isBenar": false },
+        { "kode": "D", "teks": "Rp 250.000", "isBenar": false }
       ]
     }
   ]
@@ -174,7 +188,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
   const handleCopyPromptText = () => {
     navigator.clipboard.writeText(generatedPromptText);
     setCopiedPrompt(true);
-    toast.success("Prompt Kuis berhasil disalin!");
+    toast.success("Prompt Kuis Materi berhasil disalin!");
     setTimeout(() => setCopiedPrompt(false), 2000);
   };
 
@@ -194,7 +208,8 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
 
       const res = await imporKuisLengkapAdmin({
         data: {
-          moduleId: aiSelectedModuleId,
+          lessonId: selectedLessonId,
+          moduleId: selectedModuleId !== "UMUM" ? selectedModuleId : undefined,
           judul: parsed.judul,
           deskripsi: parsed.deskripsi || "Kuis evaluasi materi perpajakan resmi BrevetAI.",
           batasWaktuMenit: parsed.batasWaktuMenit || 20,
@@ -241,6 +256,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
           deskripsi: deskripsiBaru || "Kuis evaluasi materi perpajakan resmi BrevetAI.",
           batasWaktuMenit: parseInt(waktuBaru, 10) || 20,
           nilaiMinimumLulus: parseInt(nilaiMinimum, 10) || 70,
+          lessonId: selectedLessonId,
           moduleId: selectedModuleId !== "UMUM" ? selectedModuleId : undefined,
           tipeKuis: selectedModuleId !== "UMUM" ? "AKHIR_MODUL" : tipeKuis,
           questions: [],
@@ -265,12 +281,12 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
   return (
     <>
       <PageHeader
-        title="AI Generator & Kuis Baru"
-        description="Pilih modul untuk menganalisis seluruh data materi dan hasilkan prompt Claude AI atau buat kuis manual."
+        title="AI Generator & Buat Kuis Materi"
+        description="Pilih Materi Pelajaran spesifik untuk di-generate kuisnya secara otomatis oleh AI atau dibuat secara manual."
         breadcrumb={[
           { label: "Admin", to: "/admin/dashboard" },
           { label: "Kuis", to: "/admin/kuis" },
-          { label: "AI Generator & Kuis Baru" },
+          { label: "Buat Kuis Materi" },
         ]}
         actions={
           <Button size="sm" variant="outline" onClick={() => navigate({ to: "/admin/kuis" })} className="font-bold shadow-2xs">
@@ -301,35 +317,35 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 bg-muted/50 p-1 rounded-xl mb-6">
               <TabsTrigger value="ai" className="font-semibold text-xs py-2.5">
-                <Sparkles className="mr-1.5 h-4 w-4 text-primary" /> 1. Generator Prompt AI Kuis (Riset Analisis Modul)
+                <Sparkles className="mr-1.5 h-4 w-4 text-primary" /> 1. Generator Prompt AI Kuis Berbasis Materi
               </TabsTrigger>
               <TabsTrigger value="form" className="font-semibold text-xs py-2.5">
-                <ClipboardList className="mr-1.5 h-4 w-4 text-primary" /> 2. Form Kuis Manual
+                <ClipboardList className="mr-1.5 h-4 w-4 text-primary" /> 2. Form Kuis Materi Manual
               </TabsTrigger>
             </TabsList>
 
-            {/* TAB 1: AI GENERATOR PROMPT (ANALISIS DATABASES MODUL & MATERI) */}
+            {/* TAB 1: AI GENERATOR PROMPT (BERBASIS MATERI) */}
             <TabsContent value="ai" className="space-y-6">
               <div className="rounded-xl border bg-muted/20 p-5 space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div>
                     <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-primary" /> Langkah 1: Pilih Modul Untuk Dianalisis AI
+                      <BookOpen className="h-5 w-5 text-primary" /> Langkah 1: Pilih Materi Pelajaran yang Ingin Dibuatkan Kuis
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Sistem akan mengambil seluruh judul bab, deskripsi, dan materi dalam modul ini untuk disusun menjadi prompt analisis Claude AI.
+                      Sistem akan mengambil isi materi ini untuk disusun menjadi prompt analisis Claude AI.
                     </p>
                   </div>
-                  <div className="w-72">
+                  <div className="w-80">
                     <select
-                      value={aiSelectedModuleId}
-                      onChange={(e) => setAiSelectedModuleId(e.target.value)}
+                      value={selectedLessonId}
+                      onChange={(e) => handleSelectLesson(e.target.value)}
                       className="w-full h-10 px-3.5 rounded-xl border bg-background text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer"
                     >
-                      {modulesList.length === 0 && <option value="">Belum ada modul terdaftar...</option>}
-                      {modulesList.map((m: any) => (
-                        <option key={m.id} value={m.id}>
-                          {m.judul}
+                      {lessonsList.length === 0 && <option value="">Belum ada materi terdaftar...</option>}
+                      {lessonsList.map((l: any) => (
+                        <option key={l.id} value={l.id}>
+                          📖 {l.judul}
                         </option>
                       ))}
                     </select>
@@ -337,7 +353,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
                 </div>
 
                 <Button onClick={handleGeneratePrompt} className="font-bold text-xs shadow-sm bg-primary text-primary-foreground">
-                  <Sparkles className="mr-1.5 h-4 w-4" /> ⚡ Generate Prompt Analisis Modul & Materi
+                  <Sparkles className="mr-1.5 h-4 w-4" /> ⚡ Generate Prompt Kuis dari Materi Ini
                 </Button>
               </div>
 
@@ -346,7 +362,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
                 <div className="rounded-xl border bg-muted/30 p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-bold text-primary flex items-center gap-1.5">
-                      <Check className="h-4 w-4 text-success" /> Prompt Analisis Modul Siap Disalin ke Claude.ai:
+                      <Check className="h-4 w-4 text-success" /> Prompt Kuis Materi Siap Disalin ke Claude.ai:
                     </Label>
                     <Button size="sm" variant="outline" onClick={handleCopyPromptText} className="font-bold text-xs">
                       {copiedPrompt ? <Check className="mr-1.5 h-4 w-4 text-success" /> : <Copy className="mr-1.5 h-4 w-4 text-primary" />}
@@ -385,7 +401,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
                   className="font-bold text-xs px-6 py-2.5 bg-primary text-primary-foreground shadow-md"
                 >
                   {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                  {isImporting ? "Mengimpor Kuis..." : "⚡ Impor & Buat Kuis Evaluasi Otomatis"}
+                  {isImporting ? "Mengimpor Kuis..." : "⚡ Impor & Buat Kuis Materi Otomatis"}
                 </Button>
               </div>
             </TabsContent>
@@ -394,11 +410,26 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
             <TabsContent value="form" className="space-y-6 pt-2">
               <form onSubmit={handleSimpanManual} className="space-y-5">
                 <div className="space-y-1.5">
+                  <Label className="text-xs font-bold">Pilih Materi Pelajaran *</Label>
+                  <select
+                    value={selectedLessonId}
+                    onChange={(e) => handleSelectLesson(e.target.value)}
+                    className="w-full h-10 px-3.5 rounded-xl border bg-background text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer"
+                  >
+                    {lessonsList.map((l: any) => (
+                      <option key={l.id} value={l.id}>
+                        📖 {l.judul}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
                   <Label className="text-xs font-bold">Judul Kuis Evaluasi *</Label>
                   <Input
                     value={judulBaru}
                     onChange={(e) => setJudulBaru(e.target.value)}
-                    placeholder="Contoh: Ujian Kuis Evaluasi KUP & CoreTax System"
+                    placeholder="Contoh: Kuis Evaluasi Definisi Pajak & Ciri-Cirinya"
                     required
                     className="text-sm font-bold bg-background"
                   />
@@ -409,7 +440,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
                   <Textarea
                     value={deskripsiBaru}
                     onChange={(e) => setDeskripsiBaru(e.target.value)}
-                    placeholder="Penjelasan ringkas cakupan materi ujian..."
+                    placeholder="Penjelasan ringkas pemahaman materi..."
                     rows={3}
                     className="text-sm bg-background"
                   />
@@ -417,13 +448,13 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold">Terikat Modul</Label>
+                    <Label className="text-xs font-bold">Modul Induk</Label>
                     <select
                       value={selectedModuleId}
                       onChange={(e) => setSelectedModuleId(e.target.value)}
                       className="w-full h-10 px-3.5 rounded-xl border bg-background text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer"
                     >
-                      <option value="UMUM">UMUM / LATIHAN MANDIRI (Tanpa Modul)</option>
+                      <option value="UMUM">UMUM (Tanpa Modul Spefik)</option>
                       {modulesList.map((m: any) => (
                         <option key={m.id} value={m.id}>
                           {m.judul}
@@ -459,7 +490,7 @@ SKEMA STRUCTURE JSON ARTIFACT KUIS:
                   </Button>
                   <Button type="submit" disabled={loading || !judulBaru.trim()} className="font-bold shadow-md">
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    Simpan Kuis Manual
+                    Simpan Kuis Materi
                   </Button>
                 </div>
               </form>

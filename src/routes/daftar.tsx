@@ -52,10 +52,14 @@ function DaftarPage() {
         password,
       });
 
-      if (result.error) {
+      if (result?.error) {
         setError(result.error.message || "Gagal membuat akun. Silakan coba lagi.");
       } else {
-        navigate({ to: "/beranda" });
+        if ((result as any)?.data?.token) {
+          localStorage.setItem("bearer_token", (result as any).data.token);
+          localStorage.setItem("better-auth.session_token", (result as any).data.token);
+        }
+        window.location.href = "/beranda";
       }
     } catch {
       setError("Terjadi kesalahan koneksi. Silakan coba lagi.");

@@ -312,7 +312,7 @@ function AdminModulListPage() {
                       </span>
                       <div className="flex items-center gap-1">
                         <Button size="sm" variant="outline" asChild className="text-xs px-2.5 h-8 font-semibold">
-                          <Link to="/admin/modul/$slug" params={{ slug: m.slug || m.id }}>
+                          <Link to="/admin/modul/$slug" params={{ slug: (m.slug && m.slug !== "undefined") ? m.slug : m.id }}>
                             <Edit3 className="mr-1 h-3.5 w-3.5 text-primary" /> Kelola
                           </Link>
                         </Button>

@@ -9,34 +9,55 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void; setTheme: (t:
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [hydrated, setHydrated] = useState(false);
 
+  // Inisialisasi tema setelah React Hydration selesai untuk menghindari Mismatch SSR vs Client
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
-    const initial: Theme =
-      stored ??
-      (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light");
-    setThemeState(initial);
-    setHydrated(true);
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("theme") as Theme | null;
+      if (stored === "dark" || stored === "light") {
+        setThemeState(stored);
+        if (stored === "dark") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      } else if (document.documentElement.classList.contains("dark")) {
+        setThemeState("dark");
+      }
+    }
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme, hydrated]);
+  const toggle = () => {
+    setThemeState((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      if (typeof window !== "undefined") {
+        const root = document.documentElement;
+        if (next === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+        localStorage.setItem("theme", next);
+      }
+      return next;
+    });
+  };
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    if (typeof window !== "undefined") {
+      const root = document.documentElement;
+      if (newTheme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+      localStorage.setItem("theme", newTheme);
+    }
+  };
 
   return (
-    <ThemeCtx.Provider
-      value={{
-        theme,
-        toggle: () => setThemeState((t) => (t === "dark" ? "light" : "dark")),
-        setTheme: setThemeState,
-      }}
-    >
+    <ThemeCtx.Provider value={{ theme, toggle, setTheme }}>
       {children}
     </ThemeCtx.Provider>
   );

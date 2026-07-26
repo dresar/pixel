@@ -1,148 +1,57 @@
-import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { promptStudioService } from "../server/features/prompt-studio/prompt-studio.service";
-import { validasiSesi } from "../server/shared/middleware/auth-middleware";
-import { validasiPeran, membutuhkanAdmin } from "../server/shared/middleware/role-middleware";
-import { sukses, gagal } from "../server/shared/utils/response-builder";
-import { isAppError } from "../server/shared/errors/AppError";
+/**
+ * Prompt Studio Management Functions — Frontend calls ke backend server
+ * Note: Fitur ini memanggil /api/prompt-studio/* di backend
+ */
 
-// ── List all Prompt Engines (sorted by urutan_kompilasi)
-export const getDaftarPromptEngine = createServerFn({ method: "GET" }).handler(async () => {
-  try {
-    await validasiSesi();
-    const list = await promptStudioService.daftarEngines();
-    return sukses("Daftar Prompt Engine berhasil dimuat", list);
-  } catch (error) {
-    if (isAppError(error)) return gagal(error.message, error.code);
-    return gagal("Gagal memuat daftar Prompt Engine.", "INTERNAL_ERROR");
-  }
-});
+import { api } from "../lib/api-client";
 
-// ── Get single Prompt Engine by ID
-export const getDetailPromptEngine = createServerFn({ method: "GET" })
-  .validator(z.object({ id: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    try {
-      await validasiSesi();
-      const engine = await promptStudioService.detailEngine(data.id);
-      return sukses("Detail Prompt Engine dimuat", engine);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal memuat detail Prompt Engine.", "INTERNAL_ERROR");
-    }
-  });
+export async function getDaftarPromptEngine() {
+  return api.get("/api/prompt-studio");
+}
 
-// ── Create new Prompt Engine
-export const buatPromptEngine = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      nama: z.string().min(1),
-      kodeEngine: z.string().min(1).toUpperCase(),
-      kategoriEngine: z.string().min(1),
-      deskripsi: z.string().optional(),
-      kontenTemplate: z.string().min(1),
-      urutanKompilasi: z.number().int().min(0).default(99),
-      aktif: z.boolean().default(true),
-      tag: z.array(z.string()).optional(),
-    })
-  )
-  .handler(async ({ data }) => {
-    try {
-      const sesi = await validasiSesi();
-      await validasiPeran(sesi.userId, membutuhkanAdmin());
-      const engine = await promptStudioService.buatEngine({
-        ...data,
-        dibuatOleh: sesi.userId,
-      });
-      return sukses("Prompt Engine berhasil dibuat", engine);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal membuat Prompt Engine.", "INTERNAL_ERROR");
-    }
-  });
+export async function getDetailPromptEngine(data: { id: string }) {
+  return api.get(`/api/prompt-studio/${data.id}`);
+}
 
-// ── Update Prompt Engine (auto-version snapshot)
-export const updatePromptEngine = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      id: z.string().uuid(),
-      nama: z.string().min(1).optional(),
-      deskripsi: z.string().optional(),
-      kontenTemplate: z.string().optional(),
-      urutanKompilasi: z.number().int().min(0).optional(),
-      aktif: z.boolean().optional(),
-      tag: z.array(z.string()).optional(),
-      catatanRevisi: z.string().optional(),
-    })
-  )
-  .handler(async ({ data }) => {
-    try {
-      const sesi = await validasiSesi();
-      await validasiPeran(sesi.userId, membutuhkanAdmin());
-      const { id, catatanRevisi, ...updateData } = data;
-      const updated = await promptStudioService.updateEngine(id, updateData, sesi.userId, catatanRevisi);
-      return sukses("Prompt Engine berhasil diperbarui", updated);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal memperbarui Prompt Engine.", "INTERNAL_ERROR");
-    }
-  });
+export async function buatPromptEngine(data: {
+  nama: string;
+  kodeEngine: string;
+  kategoriEngine: string;
+  deskripsi?: string;
+  kontenTemplate: string;
+  urutanKompilasi?: number;
+  aktif?: boolean;
+  tag?: string[];
+}) {
+  return api.post("/api/prompt-studio", data);
+}
 
-// ── Toggle aktif/nonaktif Prompt Engine
-export const toggleAktifPromptEngine = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    try {
-      const sesi = await validasiSesi();
-      await validasiPeran(sesi.userId, membutuhkanAdmin());
-      const updated = await promptStudioService.toggleAktif(data.id);
-      return sukses(`Prompt Engine ${updated?.aktif ? "diaktifkan" : "dinonaktifkan"}`, updated);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal mengubah status Prompt Engine.", "INTERNAL_ERROR");
-    }
-  });
+export async function updatePromptEngine(data: {
+  id: string;
+  nama?: string;
+  deskripsi?: string;
+  kontenTemplate?: string;
+  urutanKompilasi?: number;
+  aktif?: boolean;
+  tag?: string[];
+  catatanRevisi?: string;
+}) {
+  const { id, ...body } = data;
+  return api.patch(`/api/prompt-studio/${id}`, body);
+}
 
-// ── Delete Prompt Engine
-export const hapusPromptEngine = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    try {
-      const sesi = await validasiSesi();
-      await validasiPeran(sesi.userId, membutuhkanAdmin());
-      await promptStudioService.hapusEngine(data.id);
-      return sukses("Prompt Engine berhasil dihapus", null);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal menghapus Prompt Engine.", "INTERNAL_ERROR");
-    }
-  });
+export async function toggleAktifPromptEngine(data: { id: string }) {
+  return api.patch(`/api/prompt-studio/${data.id}/toggle-aktif`);
+}
 
-// ── Get version history for a Prompt Engine
-export const getRiwayatVersiEngine = createServerFn({ method: "GET" })
-  .validator(z.object({ engineId: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    try {
-      await validasiSesi();
-      const versi = await promptStudioService.daftarVersiEngine(data.engineId);
-      return sukses("Riwayat versi dimuat", versi);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal memuat riwayat versi.", "INTERNAL_ERROR");
-    }
-  });
+export async function hapusPromptEngine(data: { id: string }) {
+  return api.delete(`/api/prompt-studio/${data.id}`);
+}
 
-// ── Restore a previous version
-export const pulihkanVersiEngine = createServerFn({ method: "POST" })
-  .validator(z.object({ engineId: z.string().uuid(), nomorVersi: z.number().int().min(1) }))
-  .handler(async ({ data }) => {
-    try {
-      const sesi = await validasiSesi();
-      await validasiPeran(sesi.userId, membutuhkanAdmin());
-      const updated = await promptStudioService.pulihkanVersi(data.engineId, data.nomorVersi, sesi.userId);
-      return sukses(`Engine dipulihkan ke Versi ${data.nomorVersi}`, updated);
-    } catch (error) {
-      if (isAppError(error)) return gagal(error.message, error.code);
-      return gagal("Gagal memulihkan versi.", "INTERNAL_ERROR");
-    }
-  });
+export async function getRiwayatVersiEngine(data: { engineId: string }) {
+  return api.get(`/api/prompt-studio/${data.engineId}/versi`);
+}
+
+export async function pulihkanVersiEngine(data: { engineId: string; nomorVersi: number }) {
+  return api.post(`/api/prompt-studio/${data.engineId}/pulihkan`, { nomorVersi: data.nomorVersi });
+}

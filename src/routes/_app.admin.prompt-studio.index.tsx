@@ -201,7 +201,7 @@ function PromptStudioIndexPage() {
                   onChange={(e) => setNewKategori(e.target.value)}
                   className="w-full h-10 px-3 rounded-xl border bg-background text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {["SYSTEM","RESEARCH","REASONING","CURRICULUM","PEDAGOGY","OUTPUT_FORMAT","VISUAL","ASSESSMENT","QUALITY","SELF_REVIEW"].map((k) => (
+                  {["SYSTEM", "RESEARCH", "REASONING", "CURRICULUM", "PEDAGOGY", "OUTPUT_FORMAT", "VISUAL", "ASSESSMENT", "QUALITY", "SELF_REVIEW"].map((k) => (
                     <option key={k} value={k}>{k}</option>
                   ))}
                 </select>

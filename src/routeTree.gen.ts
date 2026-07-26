@@ -51,7 +51,7 @@ import { Route as AppAdminGlosariumRouteImport } from './routes/_app.admin.glosa
 import { Route as AppAdminKeyRouteImport } from './routes/_app.admin.key'
 import { Route as AppAdminPengaturanRouteImport } from './routes/_app.admin.pengaturan'
 import { Route as AppAdminPenggunaRouteImport } from './routes/_app.admin.pengguna'
-import { Route as AppAdminPromptRouteImport } from './routes/_app.admin.prompt'
+import { Route as AppAdminProfilRouteImport } from './routes/_app.admin.profil'
 import { Route as AppAdminReferensiRouteImport } from './routes/_app.admin.referensi'
 import { Route as AppAiCatatanRouteImport } from './routes/_app.ai.catatan'
 import { Route as AppAiChatRouteImport } from './routes/_app.ai.chat'
@@ -71,7 +71,12 @@ import { Route as AppAdminModulSlugRouteImport } from './routes/_app.admin.modul
 import { Route as AppAdminModulBaruRouteImport } from './routes/_app.admin.modul.baru'
 import { Route as AppAdminPromptStudioIndexRouteImport } from './routes/_app.admin.prompt-studio.index'
 import { Route as AppAdminPromptStudioCompilerRouteImport } from './routes/_app.admin.prompt-studio.compiler'
+import { Route as AppAdminStudiKasusIndexRouteImport } from './routes/_app.admin.studi-kasus.index'
+import { Route as AppAdminStudiKasusIdRouteImport } from './routes/_app.admin.studi-kasus.$id'
+import { Route as AppAdminStudiKasusBaruRouteImport } from './routes/_app.admin.studi-kasus.baru'
+import { Route as AppAiChatIdRouteImport } from './routes/_app.ai.chat.$id'
 import { Route as AppBelajarMateriSlugRouteImport } from './routes/_app.belajar.materi.$slug'
+import { Route as AppRoadmapMateriSlugRouteImport } from './routes/_app.roadmap.materi.$slug'
 import { Route as AppAdminPromptStudioEngineIdRouteImport } from './routes/_app.admin.prompt-studio.engine.$id'
 import { Route as AppBelajarMateriSlugQuizRouteImport } from './routes/_app.belajar.materi.$slug.quiz'
 
@@ -284,9 +289,9 @@ const AppAdminPenggunaRoute = AppAdminPenggunaRouteImport.update({
   path: '/admin/pengguna',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminPromptRoute = AppAdminPromptRouteImport.update({
-  id: '/admin/prompt',
-  path: '/admin/prompt',
+const AppAdminProfilRoute = AppAdminProfilRouteImport.update({
+  id: '/admin/profil',
+  path: '/admin/profil',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdminReferensiRoute = AppAdminReferensiRouteImport.update({
@@ -386,10 +391,35 @@ const AppAdminPromptStudioCompilerRoute =
     path: '/admin/prompt-studio/compiler',
     getParentRoute: () => AppRoute,
   } as any)
+const AppAdminStudiKasusIndexRoute = AppAdminStudiKasusIndexRouteImport.update({
+  id: '/admin/studi-kasus/',
+  path: '/admin/studi-kasus/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminStudiKasusIdRoute = AppAdminStudiKasusIdRouteImport.update({
+  id: '/admin/studi-kasus/$id',
+  path: '/admin/studi-kasus/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminStudiKasusBaruRoute = AppAdminStudiKasusBaruRouteImport.update({
+  id: '/admin/studi-kasus/baru',
+  path: '/admin/studi-kasus/baru',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiChatIdRoute = AppAiChatIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppAiChatRoute,
+} as any)
 const AppBelajarMateriSlugRoute = AppBelajarMateriSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => AppBelajarMateriRoute,
+} as any)
+const AppRoadmapMateriSlugRoute = AppRoadmapMateriSlugRouteImport.update({
+  id: '/materi/$slug',
+  path: '/materi/$slug',
+  getParentRoute: () => AppRoadmapRoute,
 } as any)
 const AppAdminPromptStudioEngineIdRoute =
   AppAdminPromptStudioEngineIdRouteImport.update({
@@ -432,7 +462,7 @@ export interface FileRoutesByFullPath {
   '/referensi': typeof AppReferensiRoute
   '/rencana': typeof AppRencanaRoute
   '/riwayat': typeof AppRiwayatRoute
-  '/roadmap': typeof AppRoadmapRoute
+  '/roadmap': typeof AppRoadmapRouteWithChildren
   '/sertifikat': typeof AppSertifikatRoute
   '/sorotan': typeof AppSorotanRoute
   '/studi-kasus': typeof AppStudiKasusRoute
@@ -445,10 +475,10 @@ export interface FileRoutesByFullPath {
   '/admin/key': typeof AppAdminKeyRoute
   '/admin/pengaturan': typeof AppAdminPengaturanRoute
   '/admin/pengguna': typeof AppAdminPenggunaRoute
-  '/admin/prompt': typeof AppAdminPromptRoute
+  '/admin/profil': typeof AppAdminProfilRoute
   '/admin/referensi': typeof AppAdminReferensiRoute
   '/ai/catatan': typeof AppAiCatatanRoute
-  '/ai/chat': typeof AppAiChatRoute
+  '/ai/chat': typeof AppAiChatRouteWithChildren
   '/ai/jelaskan': typeof AppAiJelaskanRoute
   '/ai/riwayat': typeof AppAiRiwayatRoute
   '/belajar/materi': typeof AppBelajarMateriRouteWithChildren
@@ -462,11 +492,16 @@ export interface FileRoutesByFullPath {
   '/admin/modul/$slug': typeof AppAdminModulSlugRoute
   '/admin/modul/baru': typeof AppAdminModulBaruRoute
   '/admin/prompt-studio/compiler': typeof AppAdminPromptStudioCompilerRoute
+  '/admin/studi-kasus/$id': typeof AppAdminStudiKasusIdRoute
+  '/admin/studi-kasus/baru': typeof AppAdminStudiKasusBaruRoute
+  '/ai/chat/$id': typeof AppAiChatIdRoute
   '/belajar/materi/$slug': typeof AppBelajarMateriSlugRouteWithChildren
+  '/roadmap/materi/$slug': typeof AppRoadmapMateriSlugRoute
   '/admin/kuis/': typeof AppAdminKuisIndexRoute
   '/admin/materi/': typeof AppAdminMateriIndexRoute
   '/admin/modul/': typeof AppAdminModulIndexRoute
   '/admin/prompt-studio/': typeof AppAdminPromptStudioIndexRoute
+  '/admin/studi-kasus/': typeof AppAdminStudiKasusIndexRoute
   '/admin/prompt-studio/engine/$id': typeof AppAdminPromptStudioEngineIdRoute
   '/belajar/materi/$slug/quiz': typeof AppBelajarMateriSlugQuizRoute
 }
@@ -498,7 +533,7 @@ export interface FileRoutesByTo {
   '/referensi': typeof AppReferensiRoute
   '/rencana': typeof AppRencanaRoute
   '/riwayat': typeof AppRiwayatRoute
-  '/roadmap': typeof AppRoadmapRoute
+  '/roadmap': typeof AppRoadmapRouteWithChildren
   '/sertifikat': typeof AppSertifikatRoute
   '/sorotan': typeof AppSorotanRoute
   '/studi-kasus': typeof AppStudiKasusRoute
@@ -511,10 +546,10 @@ export interface FileRoutesByTo {
   '/admin/key': typeof AppAdminKeyRoute
   '/admin/pengaturan': typeof AppAdminPengaturanRoute
   '/admin/pengguna': typeof AppAdminPenggunaRoute
-  '/admin/prompt': typeof AppAdminPromptRoute
+  '/admin/profil': typeof AppAdminProfilRoute
   '/admin/referensi': typeof AppAdminReferensiRoute
   '/ai/catatan': typeof AppAiCatatanRoute
-  '/ai/chat': typeof AppAiChatRoute
+  '/ai/chat': typeof AppAiChatRouteWithChildren
   '/ai/jelaskan': typeof AppAiJelaskanRoute
   '/ai/riwayat': typeof AppAiRiwayatRoute
   '/belajar/materi': typeof AppBelajarMateriRouteWithChildren
@@ -528,11 +563,16 @@ export interface FileRoutesByTo {
   '/admin/modul/$slug': typeof AppAdminModulSlugRoute
   '/admin/modul/baru': typeof AppAdminModulBaruRoute
   '/admin/prompt-studio/compiler': typeof AppAdminPromptStudioCompilerRoute
+  '/admin/studi-kasus/$id': typeof AppAdminStudiKasusIdRoute
+  '/admin/studi-kasus/baru': typeof AppAdminStudiKasusBaruRoute
+  '/ai/chat/$id': typeof AppAiChatIdRoute
   '/belajar/materi/$slug': typeof AppBelajarMateriSlugRouteWithChildren
+  '/roadmap/materi/$slug': typeof AppRoadmapMateriSlugRoute
   '/admin/kuis': typeof AppAdminKuisIndexRoute
   '/admin/materi': typeof AppAdminMateriIndexRoute
   '/admin/modul': typeof AppAdminModulIndexRoute
   '/admin/prompt-studio': typeof AppAdminPromptStudioIndexRoute
+  '/admin/studi-kasus': typeof AppAdminStudiKasusIndexRoute
   '/admin/prompt-studio/engine/$id': typeof AppAdminPromptStudioEngineIdRoute
   '/belajar/materi/$slug/quiz': typeof AppBelajarMateriSlugQuizRoute
 }
@@ -566,7 +606,7 @@ export interface FileRoutesById {
   '/_app/referensi': typeof AppReferensiRoute
   '/_app/rencana': typeof AppRencanaRoute
   '/_app/riwayat': typeof AppRiwayatRoute
-  '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/roadmap': typeof AppRoadmapRouteWithChildren
   '/_app/sertifikat': typeof AppSertifikatRoute
   '/_app/sorotan': typeof AppSorotanRoute
   '/_app/studi-kasus': typeof AppStudiKasusRoute
@@ -579,10 +619,10 @@ export interface FileRoutesById {
   '/_app/admin/key': typeof AppAdminKeyRoute
   '/_app/admin/pengaturan': typeof AppAdminPengaturanRoute
   '/_app/admin/pengguna': typeof AppAdminPenggunaRoute
-  '/_app/admin/prompt': typeof AppAdminPromptRoute
+  '/_app/admin/profil': typeof AppAdminProfilRoute
   '/_app/admin/referensi': typeof AppAdminReferensiRoute
   '/_app/ai/catatan': typeof AppAiCatatanRoute
-  '/_app/ai/chat': typeof AppAiChatRoute
+  '/_app/ai/chat': typeof AppAiChatRouteWithChildren
   '/_app/ai/jelaskan': typeof AppAiJelaskanRoute
   '/_app/ai/riwayat': typeof AppAiRiwayatRoute
   '/_app/belajar/materi': typeof AppBelajarMateriRouteWithChildren
@@ -596,11 +636,16 @@ export interface FileRoutesById {
   '/_app/admin/modul/$slug': typeof AppAdminModulSlugRoute
   '/_app/admin/modul/baru': typeof AppAdminModulBaruRoute
   '/_app/admin/prompt-studio/compiler': typeof AppAdminPromptStudioCompilerRoute
+  '/_app/admin/studi-kasus/$id': typeof AppAdminStudiKasusIdRoute
+  '/_app/admin/studi-kasus/baru': typeof AppAdminStudiKasusBaruRoute
+  '/_app/ai/chat/$id': typeof AppAiChatIdRoute
   '/_app/belajar/materi/$slug': typeof AppBelajarMateriSlugRouteWithChildren
+  '/_app/roadmap/materi/$slug': typeof AppRoadmapMateriSlugRoute
   '/_app/admin/kuis/': typeof AppAdminKuisIndexRoute
   '/_app/admin/materi/': typeof AppAdminMateriIndexRoute
   '/_app/admin/modul/': typeof AppAdminModulIndexRoute
   '/_app/admin/prompt-studio/': typeof AppAdminPromptStudioIndexRoute
+  '/_app/admin/studi-kasus/': typeof AppAdminStudiKasusIndexRoute
   '/_app/admin/prompt-studio/engine/$id': typeof AppAdminPromptStudioEngineIdRoute
   '/_app/belajar/materi/$slug/quiz': typeof AppBelajarMateriSlugQuizRoute
 }
@@ -647,7 +692,7 @@ export interface FileRouteTypes {
     | '/admin/key'
     | '/admin/pengaturan'
     | '/admin/pengguna'
-    | '/admin/prompt'
+    | '/admin/profil'
     | '/admin/referensi'
     | '/ai/catatan'
     | '/ai/chat'
@@ -664,11 +709,16 @@ export interface FileRouteTypes {
     | '/admin/modul/$slug'
     | '/admin/modul/baru'
     | '/admin/prompt-studio/compiler'
+    | '/admin/studi-kasus/$id'
+    | '/admin/studi-kasus/baru'
+    | '/ai/chat/$id'
     | '/belajar/materi/$slug'
+    | '/roadmap/materi/$slug'
     | '/admin/kuis/'
     | '/admin/materi/'
     | '/admin/modul/'
     | '/admin/prompt-studio/'
+    | '/admin/studi-kasus/'
     | '/admin/prompt-studio/engine/$id'
     | '/belajar/materi/$slug/quiz'
   fileRoutesByTo: FileRoutesByTo
@@ -713,7 +763,7 @@ export interface FileRouteTypes {
     | '/admin/key'
     | '/admin/pengaturan'
     | '/admin/pengguna'
-    | '/admin/prompt'
+    | '/admin/profil'
     | '/admin/referensi'
     | '/ai/catatan'
     | '/ai/chat'
@@ -730,11 +780,16 @@ export interface FileRouteTypes {
     | '/admin/modul/$slug'
     | '/admin/modul/baru'
     | '/admin/prompt-studio/compiler'
+    | '/admin/studi-kasus/$id'
+    | '/admin/studi-kasus/baru'
+    | '/ai/chat/$id'
     | '/belajar/materi/$slug'
+    | '/roadmap/materi/$slug'
     | '/admin/kuis'
     | '/admin/materi'
     | '/admin/modul'
     | '/admin/prompt-studio'
+    | '/admin/studi-kasus'
     | '/admin/prompt-studio/engine/$id'
     | '/belajar/materi/$slug/quiz'
   id:
@@ -780,7 +835,7 @@ export interface FileRouteTypes {
     | '/_app/admin/key'
     | '/_app/admin/pengaturan'
     | '/_app/admin/pengguna'
-    | '/_app/admin/prompt'
+    | '/_app/admin/profil'
     | '/_app/admin/referensi'
     | '/_app/ai/catatan'
     | '/_app/ai/chat'
@@ -797,11 +852,16 @@ export interface FileRouteTypes {
     | '/_app/admin/modul/$slug'
     | '/_app/admin/modul/baru'
     | '/_app/admin/prompt-studio/compiler'
+    | '/_app/admin/studi-kasus/$id'
+    | '/_app/admin/studi-kasus/baru'
+    | '/_app/ai/chat/$id'
     | '/_app/belajar/materi/$slug'
+    | '/_app/roadmap/materi/$slug'
     | '/_app/admin/kuis/'
     | '/_app/admin/materi/'
     | '/_app/admin/modul/'
     | '/_app/admin/prompt-studio/'
+    | '/_app/admin/studi-kasus/'
     | '/_app/admin/prompt-studio/engine/$id'
     | '/_app/belajar/materi/$slug/quiz'
   fileRoutesById: FileRoutesById
@@ -1115,11 +1175,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPenggunaRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/admin/prompt': {
-      id: '/_app/admin/prompt'
-      path: '/admin/prompt'
-      fullPath: '/admin/prompt'
-      preLoaderRoute: typeof AppAdminPromptRouteImport
+    '/_app/admin/profil': {
+      id: '/_app/admin/profil'
+      path: '/admin/profil'
+      fullPath: '/admin/profil'
+      preLoaderRoute: typeof AppAdminProfilRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/admin/referensi': {
@@ -1255,12 +1315,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPromptStudioCompilerRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/studi-kasus/': {
+      id: '/_app/admin/studi-kasus/'
+      path: '/admin/studi-kasus'
+      fullPath: '/admin/studi-kasus/'
+      preLoaderRoute: typeof AppAdminStudiKasusIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/studi-kasus/$id': {
+      id: '/_app/admin/studi-kasus/$id'
+      path: '/admin/studi-kasus/$id'
+      fullPath: '/admin/studi-kasus/$id'
+      preLoaderRoute: typeof AppAdminStudiKasusIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/studi-kasus/baru': {
+      id: '/_app/admin/studi-kasus/baru'
+      path: '/admin/studi-kasus/baru'
+      fullPath: '/admin/studi-kasus/baru'
+      preLoaderRoute: typeof AppAdminStudiKasusBaruRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ai/chat/$id': {
+      id: '/_app/ai/chat/$id'
+      path: '/$id'
+      fullPath: '/ai/chat/$id'
+      preLoaderRoute: typeof AppAiChatIdRouteImport
+      parentRoute: typeof AppAiChatRoute
+    }
     '/_app/belajar/materi/$slug': {
       id: '/_app/belajar/materi/$slug'
       path: '/$slug'
       fullPath: '/belajar/materi/$slug'
       preLoaderRoute: typeof AppBelajarMateriSlugRouteImport
       parentRoute: typeof AppBelajarMateriRoute
+    }
+    '/_app/roadmap/materi/$slug': {
+      id: '/_app/roadmap/materi/$slug'
+      path: '/materi/$slug'
+      fullPath: '/roadmap/materi/$slug'
+      preLoaderRoute: typeof AppRoadmapMateriSlugRouteImport
+      parentRoute: typeof AppRoadmapRoute
     }
     '/_app/admin/prompt-studio/engine/$id': {
       id: '/_app/admin/prompt-studio/engine/$id'
@@ -1326,6 +1421,30 @@ const AppKuisRouteChildren: AppKuisRouteChildren = {
 const AppKuisRouteWithChildren =
   AppKuisRoute._addFileChildren(AppKuisRouteChildren)
 
+interface AppRoadmapRouteChildren {
+  AppRoadmapMateriSlugRoute: typeof AppRoadmapMateriSlugRoute
+}
+
+const AppRoadmapRouteChildren: AppRoadmapRouteChildren = {
+  AppRoadmapMateriSlugRoute: AppRoadmapMateriSlugRoute,
+}
+
+const AppRoadmapRouteWithChildren = AppRoadmapRoute._addFileChildren(
+  AppRoadmapRouteChildren,
+)
+
+interface AppAiChatRouteChildren {
+  AppAiChatIdRoute: typeof AppAiChatIdRoute
+}
+
+const AppAiChatRouteChildren: AppAiChatRouteChildren = {
+  AppAiChatIdRoute: AppAiChatIdRoute,
+}
+
+const AppAiChatRouteWithChildren = AppAiChatRoute._addFileChildren(
+  AppAiChatRouteChildren,
+)
+
 interface AppRouteChildren {
   AppBelajarRoute: typeof AppBelajarRouteWithChildren
   AppBerandaRoute: typeof AppBerandaRoute
@@ -1346,7 +1465,7 @@ interface AppRouteChildren {
   AppReferensiRoute: typeof AppReferensiRoute
   AppRencanaRoute: typeof AppRencanaRoute
   AppRiwayatRoute: typeof AppRiwayatRoute
-  AppRoadmapRoute: typeof AppRoadmapRoute
+  AppRoadmapRoute: typeof AppRoadmapRouteWithChildren
   AppSertifikatRoute: typeof AppSertifikatRoute
   AppSorotanRoute: typeof AppSorotanRoute
   AppStudiKasusRoute: typeof AppStudiKasusRoute
@@ -1359,10 +1478,10 @@ interface AppRouteChildren {
   AppAdminKeyRoute: typeof AppAdminKeyRoute
   AppAdminPengaturanRoute: typeof AppAdminPengaturanRoute
   AppAdminPenggunaRoute: typeof AppAdminPenggunaRoute
-  AppAdminPromptRoute: typeof AppAdminPromptRoute
+  AppAdminProfilRoute: typeof AppAdminProfilRoute
   AppAdminReferensiRoute: typeof AppAdminReferensiRoute
   AppAiCatatanRoute: typeof AppAiCatatanRoute
-  AppAiChatRoute: typeof AppAiChatRoute
+  AppAiChatRoute: typeof AppAiChatRouteWithChildren
   AppAiJelaskanRoute: typeof AppAiJelaskanRoute
   AppAiRiwayatRoute: typeof AppAiRiwayatRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
@@ -1372,10 +1491,13 @@ interface AppRouteChildren {
   AppAdminModulSlugRoute: typeof AppAdminModulSlugRoute
   AppAdminModulBaruRoute: typeof AppAdminModulBaruRoute
   AppAdminPromptStudioCompilerRoute: typeof AppAdminPromptStudioCompilerRoute
+  AppAdminStudiKasusIdRoute: typeof AppAdminStudiKasusIdRoute
+  AppAdminStudiKasusBaruRoute: typeof AppAdminStudiKasusBaruRoute
   AppAdminKuisIndexRoute: typeof AppAdminKuisIndexRoute
   AppAdminMateriIndexRoute: typeof AppAdminMateriIndexRoute
   AppAdminModulIndexRoute: typeof AppAdminModulIndexRoute
   AppAdminPromptStudioIndexRoute: typeof AppAdminPromptStudioIndexRoute
+  AppAdminStudiKasusIndexRoute: typeof AppAdminStudiKasusIndexRoute
   AppAdminPromptStudioEngineIdRoute: typeof AppAdminPromptStudioEngineIdRoute
 }
 
@@ -1399,7 +1521,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReferensiRoute: AppReferensiRoute,
   AppRencanaRoute: AppRencanaRoute,
   AppRiwayatRoute: AppRiwayatRoute,
-  AppRoadmapRoute: AppRoadmapRoute,
+  AppRoadmapRoute: AppRoadmapRouteWithChildren,
   AppSertifikatRoute: AppSertifikatRoute,
   AppSorotanRoute: AppSorotanRoute,
   AppStudiKasusRoute: AppStudiKasusRoute,
@@ -1412,10 +1534,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminKeyRoute: AppAdminKeyRoute,
   AppAdminPengaturanRoute: AppAdminPengaturanRoute,
   AppAdminPenggunaRoute: AppAdminPenggunaRoute,
-  AppAdminPromptRoute: AppAdminPromptRoute,
+  AppAdminProfilRoute: AppAdminProfilRoute,
   AppAdminReferensiRoute: AppAdminReferensiRoute,
   AppAiCatatanRoute: AppAiCatatanRoute,
-  AppAiChatRoute: AppAiChatRoute,
+  AppAiChatRoute: AppAiChatRouteWithChildren,
   AppAiJelaskanRoute: AppAiJelaskanRoute,
   AppAiRiwayatRoute: AppAiRiwayatRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
@@ -1425,10 +1547,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminModulSlugRoute: AppAdminModulSlugRoute,
   AppAdminModulBaruRoute: AppAdminModulBaruRoute,
   AppAdminPromptStudioCompilerRoute: AppAdminPromptStudioCompilerRoute,
+  AppAdminStudiKasusIdRoute: AppAdminStudiKasusIdRoute,
+  AppAdminStudiKasusBaruRoute: AppAdminStudiKasusBaruRoute,
   AppAdminKuisIndexRoute: AppAdminKuisIndexRoute,
   AppAdminMateriIndexRoute: AppAdminMateriIndexRoute,
   AppAdminModulIndexRoute: AppAdminModulIndexRoute,
   AppAdminPromptStudioIndexRoute: AppAdminPromptStudioIndexRoute,
+  AppAdminStudiKasusIndexRoute: AppAdminStudiKasusIndexRoute,
   AppAdminPromptStudioEngineIdRoute: AppAdminPromptStudioEngineIdRoute,
 }
 

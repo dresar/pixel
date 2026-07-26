@@ -356,7 +356,9 @@ Pastikan hanya mengembalikan JSON murni tanpa markdown pembungkus lain agar dapa
                             {idx + 1}
                           </span>
                           <div>
-                            <p className="text-sm font-bold leading-snug text-foreground">{q.pertanyaanTeks}</p>
+                            <p className="text-sm font-bold leading-snug text-foreground">
+                              {q.pertanyaanTeks || q.pertanyaan || q.teksPertanyaan || "Soal Uji Evaluasi Perpajakan"}
+                            </p>
                             {q.penjelasan && (
                               <p className="mt-1.5 text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-lg border leading-relaxed">
                                 💡 <strong>Penjelasan Hukum / Teori:</strong> {q.penjelasan}
@@ -373,7 +375,7 @@ Pastikan hanya mengembalikan JSON murni tanpa markdown pembungkus lain agar dapa
                       <div className="grid gap-2 sm:grid-cols-2 pl-10">
                         {q.options && q.options.map((opt: any, optIdx: number) => {
                           const huruf = ["A", "B", "C", "D"][optIdx] || "•";
-                          const isBenar = opt.adalahBenar;
+                          const isBenar = Boolean(opt.adalahBenar ?? opt.isBenar ?? opt.benar);
                           return (
                             <div
                               key={opt.id || optIdx}
@@ -390,7 +392,9 @@ Pastikan hanya mengembalikan JSON murni tanpa markdown pembungkus lain agar dapa
                               >
                                 {huruf}
                               </span>
-                              <span className="flex-1 leading-snug text-foreground">{opt.teksOpsi}</span>
+                              <span className="flex-1 leading-snug text-foreground">
+                                {opt.teksOpsi || opt.teks || "Teks Opsi Jawaban"}
+                              </span>
                               {isBenar && <Check className="h-4 w-4 text-success shrink-0" />}
                             </div>
                           );

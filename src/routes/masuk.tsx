@@ -1,24 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Mail, Lock, Eye, EyeOff, Loader2, ShieldAlert, Sparkles, UserCheck } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import { AuthLayout } from "@/components/auth/AuthLayout";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { signIn } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/masuk")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: (search.redirect as string) || undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Masuk — BrevetAI" },
@@ -36,7 +30,7 @@ const devAccountsList = [
     pass: "Password123!",
     badge: "bg-destructive/15 text-destructive border-destructive/20",
     icon: ShieldAlert,
-    desc: "Akses penuh sistem, manajemen API key Gemini, & audit log.",
+    desc: "Akses penuh sistem, API Key & audit log",
   },
   {
     role: "ADMIN",
@@ -45,7 +39,7 @@ const devAccountsList = [
     pass: "Password123!",
     badge: "bg-amber-500/15 text-amber-600 border-amber-500/20",
     icon: Sparkles,
-    desc: "Manajemen modul, materi, & kelola bank kuis.",
+    desc: "Kelola modul, materi & kuis",
   },
   {
     role: "STUDENT",
@@ -54,27 +48,23 @@ const devAccountsList = [
     pass: "Password123!",
     badge: "bg-primary/15 text-primary border-primary/20",
     icon: UserCheck,
-    desc: "Akses fitur belajar, Tanya AI, kuis, & flashcards.",
+    desc: "Belajar, Tanya AI, kuis & flashcards",
   },
 ];
 
 function MasukPage() {
-  const navigate = useNavigate();
+  const search = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [ingatSaya, setIngatSaya] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleMasuk = async (e: React.FormEvent, customEmail?: string, customPass?: string) => {
+  const handleMasuk = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    const loginEmail = customEmail ?? email;
-    const loginPass = customPass ?? password;
-
-    if (!loginEmail || !loginPass) {
+    if (!email || !password) {
       setError("Email dan kata sandi wajib diisi.");
       return;
     }
@@ -84,24 +74,24 @@ function MasukPage() {
 
     try {
       const result = await signIn.email({
-        email: loginEmail,
-        password: loginPass,
+        email,
+        password,
         rememberMe: ingatSaya,
       });
 
-      if (result.error) {
+      if (result?.error) {
         setError(result.error.message || "Gagal masuk. Periksa email dan kata sandi Anda.");
-      } else {
-        setDialogOpen(false);
-        if (loginEmail.toLowerCase().includes("admin")) {
-          navigate({ to: "/admin" });
-        } else {
-          navigate({ to: "/beranda" });
-        }
+        setLoading(false);
+        return;
       }
-    } catch {
-      setError("Terjadi kesalahan koneksi. Silakan coba lagi.");
-    } finally {
+
+      // Login sukses — tentukan rute tujuan (utamakan parameter query search redirect jika ada)
+      const defaultTarget = email.toLowerCase().includes("admin") ? "/admin/dashboard" : "/beranda";
+      const targetPath = search.redirect || defaultTarget;
+      window.location.href = targetPath;
+    } catch (err: any) {
+      console.error("Gagal login:", err);
+      setError(err?.message || "Terjadi kesalahan koneksi. Silakan coba lagi.");
       setLoading(false);
     }
   };
@@ -109,7 +99,7 @@ function MasukPage() {
   const handleSelectDevAccount = (acc: (typeof devAccountsList)[0]) => {
     setEmail(acc.email);
     setPassword(acc.pass);
-    handleMasuk(null as any, acc.email, acc.pass);
+    setError(null);
   };
 
   return (
@@ -197,53 +187,48 @@ function MasukPage() {
           )}
         </Button>
 
-        {/* Tombol Login Dev Modal */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="w-full border-dashed border-primary/40 bg-primary/5 text-primary hover:bg-primary/10" size="lg" type="button">
-              <Sparkles className="mr-2 h-4 w-4 text-primary" /> ⚡ Login Dev / Akun Uji Coba
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-5 w-5 text-primary" /> Pilih Akun Uji Coba (Dev Login)
-              </DialogTitle>
-              <DialogDescription className="text-xs">
-                Klik salah satu akun di bawah untuk langsung login 1-klik sebagai peran tertentu.
-              </DialogDescription>
-            </DialogHeader>
+        {/* Section Login Dev In-Page (Tanpa Modal) */}
+        <div className="pt-3 border-t border-border/60">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Akun Uji Coba (Dev Quick Fill)
+            </span>
+            <span className="text-[10px] text-muted-foreground">Klik untuk isi form</span>
+          </div>
 
-            <div className="space-y-3 pt-2">
-              {devAccountsList.map((acc) => {
-                const IconComponent = acc.icon;
-                return (
-                  <div
-                    key={acc.role}
-                    onClick={() => handleSelectDevAccount(acc)}
-                    className="group flex cursor-pointer items-start justify-between rounded-xl border p-3.5 transition-all hover:border-primary hover:bg-accent/40"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <IconComponent className="h-4 w-4" />
+          <div className="grid gap-2">
+            {devAccountsList.map((acc) => {
+              const IconComponent = acc.icon;
+              return (
+                <button
+                  key={acc.role}
+                  type="button"
+                  onClick={() => handleSelectDevAccount(acc)}
+                  disabled={loading}
+                  className="group flex items-center justify-between rounded-lg border border-border/80 p-2.5 text-left transition-all hover:border-primary/60 hover:bg-primary/5 active:scale-[0.99] disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <IconComponent className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold truncate">{acc.title}</span>
+                        <Badge variant="outline" className={`text-[9px] px-1 py-0 ${acc.badge}`}>
+                          {acc.role}
+                        </Badge>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold">{acc.title}</span>
-                          <Badge variant="outline" className={`text-[10px] ${acc.badge}`}>
-                            {acc.role}
-                          </Badge>
-                        </div>
-                        <p className="mt-0.5 text-xs font-mono text-muted-foreground">{acc.email}</p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">{acc.desc}</p>
-                      </div>
+                      <p className="text-[11px] font-mono text-muted-foreground truncate">{acc.email}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </DialogContent>
-        </Dialog>
+                  <span className="text-[10px] font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                    Isi Form ✎
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </form>
     </AuthLayout>
   );

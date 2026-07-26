@@ -1,13 +1,21 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Search, BookOpen, Clock, Layers, Sparkles, ArrowRight, Image as ImageIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader, PageBody } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getDaftarMateriSiswa } from "@/functions/modules";
+import { z } from "zod";
+
+const searchSchema = z.object({
+  cari: z.string().optional(),
+  modul: z.string().optional(),
+  slug: z.string().optional(),
+});
 
 export const Route = createFileRoute("/_app/belajar")({
+  validateSearch: (search: Record<string, unknown>) => searchSchema.parse(search),
   loader: async () => {
     try {
       const res = await getDaftarMateriSiswa();
@@ -38,14 +46,23 @@ function BelajarLayout() {
 
 function BelajarCatalog() {
   const { materiList } = Route.useLoaderData();
-  const [cari, setCari] = useState("");
+  const search = Route.useSearch();
+  const [cari, setCari] = useState(search.cari || search.modul || search.slug || "");
   const [kategoriFilter, setKategoriFilter] = useState("SEMUA");
+
+  useEffect(() => {
+    const q = search.cari || search.modul || search.slug || "";
+    if (q) {
+      setCari(q);
+    }
+  }, [search.cari, search.modul, search.slug]);
 
   const filteredMateri = materiList.filter((m: any) => {
     const matchSearch =
+      !cari ||
       m.judul.toLowerCase().includes(cari.toLowerCase()) ||
-      m.modulJudul.toLowerCase().includes(cari.toLowerCase()) ||
-      m.ringkasan.toLowerCase().includes(cari.toLowerCase());
+      (m.modulJudul && m.modulJudul.toLowerCase().includes(cari.toLowerCase())) ||
+      (m.ringkasan && m.ringkasan.toLowerCase().includes(cari.toLowerCase()));
 
     if (kategoriFilter === "DENGAN_GAMBAR") return matchSearch && !!m.gambarUrl;
     return matchSearch;
@@ -76,7 +93,7 @@ function BelajarCatalog() {
             <Button
               variant={kategoriFilter === "SEMUA" ? "default" : "outline"}
               size="sm"
-              onClick={() => setKategoriFilter("SEMUA")}
+              onClick={() => { setKategoriFilter("SEMUA"); setCari(""); }}
               className="rounded-xl text-xs font-bold shrink-0"
             >
               📚 Semua Materi ({materiList.length})
@@ -92,72 +109,65 @@ function BelajarCatalog() {
           </div>
         </div>
 
+        {/* Active Filter Indicator */}
+        {cari && (
+          <div className="flex items-center justify-between bg-primary/10 border border-primary/30 p-3 rounded-xl text-xs">
+            <span className="text-foreground">
+              Menampilkan materi untuk modul/pencarian: <strong className="text-primary font-bold">"{cari}"</strong>
+            </span>
+            <Button size="xs" variant="ghost" onClick={() => setCari("")} className="text-xs font-bold text-muted-foreground hover:text-foreground">
+              Tampilkan Semua ({materiList.length})
+            </Button>
+          </div>
+        )}
+
         {/* Realtime Materi Cards Grid */}
         {filteredMateri.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-12 text-center my-6 shadow-xs space-y-2">
             <Layers className="mx-auto h-12 w-12 text-muted-foreground/40" />
             <h3 className="text-base font-bold text-foreground">Belum Ada Materi Pembelajaran</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Silakan buat atau terbitkan materi baru dari Admin Panel (`/admin/materi`).
+              Materi untuk pencarian ini belum tersedia atau masih disiapkan di database.
             </p>
+            {cari && (
+              <Button size="sm" onClick={() => setCari("")} variant="outline" className="mt-2 text-xs font-bold">
+                Reset Pencarian
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredMateri.map((m: any) => (
               <div
                 key={m.id}
-                className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:border-primary/50 hover:shadow-md transition-all flex flex-col justify-between"
+                className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-primary/50 hover:shadow-md"
               >
-                <div>
-                  {/* Image Media Preview Thumbnail */}
-                  {m.gambarUrl ? (
-                    <div className="relative aspect-16/9 w-full bg-muted overflow-hidden border-b border-border/50">
-                      <img src={m.gambarUrl} alt={m.judul} className="h-full w-full object-cover" />
-                      <div className="absolute top-2.5 right-2.5">
-                        <Badge className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono px-2 py-0.5 rounded-full border-none">
-                          📷 Infografis AI
-                        </Badge>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="aspect-16/9 w-full bg-gradient-to-br from-primary/15 via-primary/5 to-muted/40 p-5 flex flex-col justify-between border-b border-border/40">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-[10px] rounded-full font-mono font-bold border-primary/30 text-primary">
-                          {m.modulKode}
-                        </Badge>
-                        <Badge variant="secondary" className="text-[10px] rounded-full font-bold">
-                          {m.tingkatKesulitan}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-primary font-bold">
-                        <BookOpen className="h-4 w-4" /> {m.modulJudul}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Card Content Body */}
-                  <div className="p-5 space-y-2.5">
-                    {m.gambarUrl && (
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-[10px] rounded-full font-mono font-bold border-primary/30 text-primary">
-                          {m.modulKode}
-                        </Badge>
-                        <span className="text-[11px] font-mono text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-primary" /> {m.estimasiMenit} mnt
-                        </span>
-                      </div>
-                    )}
-
-                    <h3 className="text-base font-bold text-foreground leading-snug line-clamp-2">{m.judul}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{m.ringkasan}</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="text-[10px] rounded-full font-mono font-bold border-primary/30 text-primary bg-primary/5">
+                      {m.modulKode || "BREVET-A"}
+                    </Badge>
+                    <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {m.estimasiMenit || 15} mnt
+                    </span>
                   </div>
+
+                  <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors leading-snug">
+                    {m.judul}
+                  </h3>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                    {m.ringkasan}
+                  </p>
                 </div>
 
-                {/* Card Action Footer */}
-                <div className="p-5 pt-0">
-                  <Button asChild className="w-full rounded-xl font-bold text-xs shadow-xs gap-1.5">
-                    <Link to="/belajar/materi/$slug" params={{ slug: m.slug }}>
-                      <span>Baca Materi Sekarang</span> <ArrowRight className="h-4 w-4" />
+                <div className="mt-5 border-t border-border/40 pt-3.5 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-muted-foreground truncate max-w-[140px]">
+                    {m.modulJudul || "Modul Utama"}
+                  </span>
+                  <Button asChild size="xs" className="font-bold text-xs rounded-xl shadow-xs">
+                    <Link to="/roadmap/materi/$slug" params={{ slug: m.slug }}>
+                      Baca Materi <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
                   </Button>
                 </div>
