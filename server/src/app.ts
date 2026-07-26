@@ -103,19 +103,22 @@ app.onError((err, c) => {
 // ── Start Server ───────────────────────────────────────────────────────────────
 const port = env.PORT;
 
-serve({ fetch: app.fetch, port }, () => {
-  logger.info(`🚀 BrevetAI Backend berjalan di port ${port}`);
-  logger.info(`   Environment : ${env.NODE_ENV}`);
-  logger.info(`   Health Check: http://localhost:${port}/api/health`);
-  logger.info(`   Auth API    : http://localhost:${port}/api/auth`);
-  logger.info(`   Frontend URL: ${env.FRONTEND_URL}`);
-  if (env.NODE_ENV === "development") {
-    logger.info(`\n📋 Route Summary:`);
-    logger.info(`   GET  /api/health`);
-    logger.info(`   ALL  /api/auth/*          — Better-Auth`);
-    logger.info(`   GET  /api/roadmap         — Roadmap publik`);
-    logger.info(`   GET  /api/studi-kasus     — Studi Kasus publik & admin`);
-  }
-});
+if (!process.env.VERCEL) {
+  serve({ fetch: app.fetch, port }, () => {
+    logger.info(`🚀 BrevetAI Backend berjalan di port ${port}`);
+    logger.info(`   Environment : ${env.NODE_ENV}`);
+    logger.info(`   Health Check: http://localhost:${port}/api/health`);
+    logger.info(`   Auth API    : http://localhost:${port}/api/auth`);
+    logger.info(`   Frontend URL: ${env.FRONTEND_URL}`);
+    if (env.NODE_ENV === "development") {
+      logger.info(`\n📋 Route Summary:`);
+      logger.info(`   GET  /api/health`);
+      logger.info(`   ALL  /api/auth/*          — Better-Auth`);
+      logger.info(`   GET  /api/roadmap         — Roadmap publik`);
+      logger.info(`   GET  /api/studi-kasus     — Studi Kasus publik & admin`);
+    }
+  });
+}
 
+export { app };
 export default app;

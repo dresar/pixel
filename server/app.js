@@ -83636,23 +83636,26 @@ app.onError((err, c) => {
   return gagal(c, "Terjadi kesalahan server yang tidak terduga", "INTERNAL_ERROR", 500);
 });
 var port = env.PORT;
-serve({ fetch: app.fetch, port }, () => {
-  logger2.info(`\u{1F680} BrevetAI Backend berjalan di port ${port}`);
-  logger2.info(`   Environment : ${env.NODE_ENV}`);
-  logger2.info(`   Health Check: http://localhost:${port}/api/health`);
-  logger2.info(`   Auth API    : http://localhost:${port}/api/auth`);
-  logger2.info(`   Frontend URL: ${env.FRONTEND_URL}`);
-  if (env.NODE_ENV === "development") {
-    logger2.info(`
+if (!process.env.VERCEL) {
+  serve({ fetch: app.fetch, port }, () => {
+    logger2.info(`\u{1F680} BrevetAI Backend berjalan di port ${port}`);
+    logger2.info(`   Environment : ${env.NODE_ENV}`);
+    logger2.info(`   Health Check: http://localhost:${port}/api/health`);
+    logger2.info(`   Auth API    : http://localhost:${port}/api/auth`);
+    logger2.info(`   Frontend URL: ${env.FRONTEND_URL}`);
+    if (env.NODE_ENV === "development") {
+      logger2.info(`
 \u{1F4CB} Route Summary:`);
-    logger2.info(`   GET  /api/health`);
-    logger2.info(`   ALL  /api/auth/*          \u2014 Better-Auth`);
-    logger2.info(`   GET  /api/roadmap         \u2014 Roadmap publik`);
-    logger2.info(`   GET  /api/studi-kasus     \u2014 Studi Kasus publik & admin`);
-  }
-});
+      logger2.info(`   GET  /api/health`);
+      logger2.info(`   ALL  /api/auth/*          \u2014 Better-Auth`);
+      logger2.info(`   GET  /api/roadmap         \u2014 Roadmap publik`);
+      logger2.info(`   GET  /api/studi-kasus     \u2014 Studi Kasus publik & admin`);
+    }
+  });
+}
 var app_default = app;
 export {
+  app,
   app_default as default
 };
 /*! Bundled license information:
