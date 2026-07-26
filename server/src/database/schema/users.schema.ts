@@ -7,6 +7,7 @@ import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 // ── Users ────────────────────────────────────────────────────────────────────
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
+  name: text("name"),
   namaLengkap: text("nama_lengkap"),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false),

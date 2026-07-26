@@ -79679,6 +79679,7 @@ __export(schema_exports, {
 // src/database/schema/users.schema.ts
 var users = pgTable("users", {
   id: text("id").primaryKey(),
+  name: text("name"),
   namaLengkap: text("nama_lengkap"),
   email: text("email").notNull().unique(),
   emailVerified: boolean4("email_verified").default(false),
@@ -80009,7 +80010,7 @@ var auth = betterAuth({
   advanced: {
     defaultCookieAttributes: {
       sameSite: "lax",
-      secure: false
+      secure: env.NODE_ENV === "production"
     }
   },
   trustedOrigins: [
@@ -80017,6 +80018,7 @@ var auth = betterAuth({
     "http://localhost:3001",
     "http://localhost:5173",
     "http://127.0.0.1:3000",
+    "https://pixel-ivory-one.vercel.app",
     env.FRONTEND_URL,
     env.BASE_URL
   ],
@@ -80053,15 +80055,27 @@ authRoutes.all("/*", async (c) => {
       }
     });
   }
-  const res = await auth.handler(c.req.raw);
-  const newHeaders = new Headers(res.headers);
-  newHeaders.set("Access-Control-Allow-Origin", reqOrigin);
-  newHeaders.set("Access-Control-Allow-Credentials", "true");
-  return new Response(res.body, {
-    status: res.status,
-    statusText: res.statusText,
-    headers: newHeaders
-  });
+  try {
+    const res = await auth.handler(c.req.raw);
+    const newHeaders = new Headers(res.headers);
+    newHeaders.set("Access-Control-Allow-Origin", reqOrigin);
+    newHeaders.set("Access-Control-Allow-Credentials", "true");
+    return new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: newHeaders
+    });
+  } catch (err) {
+    console.error("\u274C Better-Auth Handler Error:", err);
+    return new Response(JSON.stringify({ error: "AUTH_ERROR", message: err.message || String(err) }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": reqOrigin,
+        "Access-Control-Allow-Credentials": "true"
+      }
+    });
+  }
 });
 
 // node_modules/hono/dist/utils/cookie.js
@@ -83619,17 +83633,29 @@ app.get(
   })
 );
 app.route("/api/auth", authRoutes);
-app.route("/api", modulesRoutes);
+app.route("/auth", authRoutes);
 app.route("/api/ai", aiRoutes);
+app.route("/ai", aiRoutes);
 app.route("/api/users", usersRoutes);
+app.route("/users", usersRoutes);
 app.route("/api/media", mediaRoutes);
+app.route("/media", mediaRoutes);
 app.route("/api/glosarium", glossaryRoutes);
+app.route("/glosarium", glossaryRoutes);
 app.route("/api/referensi", referensiRoutes);
+app.route("/referensi", referensiRoutes);
 app.route("/api/notifikasi", notificationsRoutes);
+app.route("/notifikasi", notificationsRoutes);
 app.route("/api/kuis", quizRoutes);
+app.route("/kuis", quizRoutes);
 app.route("/api/api-keys", apiKeysRoutes);
+app.route("/api-keys", apiKeysRoutes);
 app.route("/api/prompt-studio", promptStudioRoutes);
+app.route("/prompt-studio", promptStudioRoutes);
 app.route("/api/studi-kasus", studiKasusRoutes);
+app.route("/studi-kasus", studiKasusRoutes);
+app.route("/api", modulesRoutes);
+app.route("/", modulesRoutes);
 app.notFound((c) => gagal(c, `Endpoint ${c.req.path} tidak ditemukan`, "NOT_FOUND", 404));
 app.onError((err, c) => {
   logger2.error("Unhandled server error", err);

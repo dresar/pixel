@@ -79,17 +79,40 @@ app.get("/api/health", (c) =>
 
 // ── API Routes ─────────────────────────────────────────────────────────────────
 app.route("/api/auth", authRoutes);
-app.route("/api", modulesRoutes);         // /api/roadmap, /api/materi, /api/modules
+app.route("/auth", authRoutes);
+
 app.route("/api/ai", aiRoutes);
+app.route("/ai", aiRoutes);
+
 app.route("/api/users", usersRoutes);
+app.route("/users", usersRoutes);
+
 app.route("/api/media", mediaRoutes);
+app.route("/media", mediaRoutes);
+
 app.route("/api/glosarium", glossaryRoutes);
+app.route("/glosarium", glossaryRoutes);
+
 app.route("/api/referensi", referensiRoutes);
+app.route("/referensi", referensiRoutes);
+
 app.route("/api/notifikasi", notificationsRoutes);
+app.route("/notifikasi", notificationsRoutes);
+
 app.route("/api/kuis", quizRoutes);
+app.route("/kuis", quizRoutes);
+
 app.route("/api/api-keys", apiKeysRoutes);
+app.route("/api-keys", apiKeysRoutes);
+
 app.route("/api/prompt-studio", promptStudioRoutes);
+app.route("/prompt-studio", promptStudioRoutes);
+
 app.route("/api/studi-kasus", studiKasusRoutes);
+app.route("/studi-kasus", studiKasusRoutes);
+
+app.route("/api", modulesRoutes);         // /api/roadmap, /api/materi, /api/modules
+app.route("/", modulesRoutes);
 
 // ── 404 Handler ────────────────────────────────────────────────────────────────
 app.notFound((c) => gagal(c, `Endpoint ${c.req.path} tidak ditemukan`, "NOT_FOUND", 404));

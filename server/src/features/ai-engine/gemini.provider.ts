@@ -126,7 +126,7 @@ export async function panggilGemini(options: PanggilGeminiOptions): Promise<Gemi
             .update(apiKeys)
             .set({
               totalRequest: (activeKey as any).totalRequest ? (activeKey as any).totalRequest + 1 : 1,
-              terakhirDigunakan: new Date(),
+              updatedAt: new Date(),
             })
             .where(eq(apiKeys.id, activeKey.id));
         } catch {
@@ -150,7 +150,8 @@ export async function panggilGemini(options: PanggilGeminiOptions): Promise<Gemi
           await db
             .update(apiKeys)
             .set({
-              gagalHit: ((activeKey as any).gagalHit || 0) + 1,
+              errorCount: ((activeKey as any).errorCount || 0) + 1,
+              updatedAt: new Date(),
             })
             .where(eq(apiKeys.id, activeKey.id));
         } catch {

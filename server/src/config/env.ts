@@ -38,11 +38,12 @@ type Env = z.infer<typeof envSchema>;
 function loadEnv(): Env {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
-    console.error("❌ Konfigurasi environment tidak valid:");
-    result.error.errors.forEach((err) => {
-      console.error(`  [${err.path.join(".")}] ${err.message}`);
-    });
-    process.exit(1);
+    const errorMessages = result.error.errors
+      .map((err) => `  [${err.path.join(".")}] ${err.message}`)
+      .join("\n");
+    console.error("❌ Konfigurasi environment tidak valid:\n" + errorMessages);
+    // Di Vercel serverless, process.exit tidak bekerja — throw agar error terlihat di logs
+    throw new Error("Invalid environment configuration:\n" + errorMessages);
   }
   return result.data;
 }

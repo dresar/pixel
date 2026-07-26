@@ -27,19 +27,31 @@ authRoutes.all("/*", async (c) => {
     });
   }
 
-  // Pass request to Better-Auth handler
-  const res = await auth.handler(c.req.raw);
+  try {
+    // Pass request to Better-Auth handler
+    const res = await auth.handler(c.req.raw);
 
-  // Copy response and attach CORS headers
-  const newHeaders = new Headers(res.headers);
-  newHeaders.set("Access-Control-Allow-Origin", reqOrigin);
-  newHeaders.set("Access-Control-Allow-Credentials", "true");
+    // Copy response and attach CORS headers
+    const newHeaders = new Headers(res.headers);
+    newHeaders.set("Access-Control-Allow-Origin", reqOrigin);
+    newHeaders.set("Access-Control-Allow-Credentials", "true");
 
-  return new Response(res.body, {
-    status: res.status,
-    statusText: res.statusText,
-    headers: newHeaders,
-  });
+    return new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: newHeaders,
+    });
+  } catch (err: any) {
+    console.error("❌ Better-Auth Handler Error:", err);
+    return new Response(JSON.stringify({ error: "AUTH_ERROR", message: err.message || String(err) }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": reqOrigin,
+        "Access-Control-Allow-Credentials": "true",
+      },
+    });
+  }
 });
 
 export { authRoutes };

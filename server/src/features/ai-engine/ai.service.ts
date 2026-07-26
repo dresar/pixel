@@ -3,7 +3,7 @@
  * Menangani logika proses prompt, rotasi chat AI, dan multi-modal image analysis
  */
 
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, asc } from "drizzle-orm";
 import { db } from "../../config/database.js";
 import { aiConversations, aiMessages } from "../../database/schema/ai.schema.js";
 import { users } from "../../database/schema/users.schema.js";

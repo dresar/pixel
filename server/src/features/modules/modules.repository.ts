@@ -2,7 +2,7 @@
  * Modules Repository — Semua query database untuk fitur modul
  */
 
-import { eq, isNull, asc, ilike, and, inArray, sql } from "drizzle-orm";
+import { eq, isNull, asc, ilike, and, or, inArray, sql } from "drizzle-orm";
 import { db } from "../../config/database.js";
 import {
   modules,
@@ -98,6 +98,7 @@ export const modulesRepository = {
     tingkatKesulitan: "DASAR" | "MENENGAH" | "LANJUT";
     estimasiMenit: number;
     urutan: number;
+    statusPublikasi?: "DRAFT" | "REVIEW" | "DISETUJUI" | "TERBIT" | "ARSIP";
     createdBy: string;
     updatedBy: string;
   }) {

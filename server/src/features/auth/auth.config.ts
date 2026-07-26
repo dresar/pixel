@@ -9,7 +9,8 @@ import { env } from "../../config/env.js";
 import { users, accounts, sessions, verifications } from "../../database/schema/index.js";
 
 export const auth = betterAuth({
-  baseURL: env.FRONTEND_URL || "http://localhost:3000",
+  baseURL: env.BASE_URL || "http://localhost:3001",
+  basePath: "/api/auth",
   secret: env.BETTER_AUTH_SECRET,
 
   database: drizzleAdapter(db, {
@@ -37,7 +38,7 @@ export const auth = betterAuth({
   advanced: {
     defaultCookieAttributes: {
       sameSite: "lax",
-      secure: false,
+      secure: env.NODE_ENV === "production",
     },
   },
 
@@ -46,6 +47,7 @@ export const auth = betterAuth({
     "http://localhost:3001",
     "http://localhost:5173",
     "http://127.0.0.1:3000",
+    "https://pixel-ivory-one.vercel.app",
     env.FRONTEND_URL,
     env.BASE_URL,
   ],
